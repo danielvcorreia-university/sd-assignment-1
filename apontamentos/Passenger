@@ -3,12 +3,12 @@ Atributos:
 	-
 
 Métodos:
-	- travelToAirport (Passager)
+	- travelToAirport (Independent)
 	- waitInQueue (Departure Airport)
 	- showDocuments (Departure Airport)
 	- boardThePlane (Plane)
 	- waitForEndOfFlight (Plane)
-	- leaveThePlane (Destination Airport)
+	- leaveThePlane (Plane)
 
 Interfaces
 	-

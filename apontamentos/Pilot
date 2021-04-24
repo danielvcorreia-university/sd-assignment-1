@@ -3,11 +3,11 @@ Atributos:
 	-
 
 Métodos:
-	- informPlaneReadyForBoarding (Departure Airport ?)
-	- waitForAllInBoard (Plane) ?
-	- flyToDestinationPoint (Plane) ?
+	- informPlaneReadyForBoarding (Departure Airport)
+	- waitForAllInBoard (Plane) 
+	- flyToDestinationPoint (Independent) 
 	- announceArrival (Plane)
-	- flyToDeparturePoint(Plane) ?
+	- flyToDeparturePoint(Independent) 
 	- parkAtTransferGate(Departure Airport)
 	
 
