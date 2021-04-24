@@ -1,0 +1,31 @@
+Atributos:
+	- boolean noMorePassagers
+	-
+
+Métodos:
+	- prepareForPassBoarding (Departure Airport)
+	- checkDocuments (Departure Airport)
+	- waitForNextPassenger (Departure Airport)
+	- informPlaneReadyToTakeOff (Plane)
+	- waitForNextFlight (Departure Airport)
+
+Interfaces
+	-
+	-
+
+Lifecycle:
+	while(true)
+	{	if (noMorePassagers) break;
+		DepartureAirport.prepareForPassBoarding();
+
+		while ( (!DepartureAirport.isQueueEmpty() or !Plane.minPassagers()) and !Plane.maxPassagers() )
+		{	if (Plane.passagersInFlight + DestinationAirport.passagersArrivedDestination == SimulationPar.N)
+				break;
+			DepartureAirport.checkDocuments(first in queue);
+			DepartureAirport.waitForNextPassager();
+
+		}
+		
+		Plane.informPlaneReadyToTakeOff();
+		noMorePassagers = DepartureAirport.waitForNextFlight();
+	}

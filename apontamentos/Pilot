@@ -1,0 +1,27 @@
+Atributos:
+	- boolean noMorePassagers
+	-
+
+Métodos:
+	- informPlaneReadyForBoarding (Departure Airport ?)
+	- waitForAllInBoard (Plane) ?
+	- flyToDestinationPoint (Plane) ?
+	- announceArrival (Plane)
+	- flyToDeparturePoint(Plane) ?
+	- parkAtTransferGate(Departure Airport)
+	
+
+Interfaces
+	-
+	-
+
+Lifecycle:
+	while(true)
+	{	if (noMorePassagers) break;
+		DepartureAirport.informPlaneReadyForBoarding();
+		Plane.waitForAllInBoarding();
+		Plane.flyToDestinationPoint();
+		Plane.announceArrival();
+		Plane.flyToDeparturePoint();
+		noMorePassagers = DepartureAirport.parkAtTransferGate();
+	}

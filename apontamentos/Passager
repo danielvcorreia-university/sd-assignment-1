@@ -1,0 +1,23 @@
+Atributos:
+	-
+	-
+
+Métodos:
+	- travelToAirport (Passager)
+	- waitInQueue (Departure Airport)
+	- showDocuments (Departure Airport)
+	- boardThePlane (Plane)
+	- waitForEndOfFlight (Plane)
+	- leaveThePlane (Destination Airport)
+
+Interfaces
+	-
+	-
+
+Lifecycle:
+	this.travelToAirport()		-- Takes random time
+	DepartureAirport.waitInQueue()
+	DepartureAirport.showDocuments()
+	Plane.boardThePlane()
+	Plane.waitForEndOfFlight()
+	DestinationAirport.leaveThePlane()
