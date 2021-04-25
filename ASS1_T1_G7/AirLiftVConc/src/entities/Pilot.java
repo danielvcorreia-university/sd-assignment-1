@@ -33,12 +33,6 @@ public class Pilot extends Thread {
     private boolean readyToTakeOff;
 
     /**
-     * Reference to the departure airport.
-     */
-
-    private final DepartureAirport depAirport;
-
-    /**
      * Reference to the plane.
      */
 
@@ -53,19 +47,17 @@ public class Pilot extends Thread {
     /**
      * Instantiation of a pilot thread.
      *
-     * @param name        thread name
-     * @param pilotId     pilot id
-     * @param depAirport  reference to the departure airport
-     * @param plane       reference to the plane
+     * @param name       thread name
+     * @param pilotId    pilot id
+     * @param plane      reference to the plane
      * @param destAirport reference to the destination airport
      */
 
-    public Pilot(String name, int pilotId, DepartureAirport depAirport, Plane plane, DestinationAirport destAirport) {
+    public Pilot(String name, int pilotId, Plane plane, DestinationAirport destAirport) {
         super(name);
         this.readyToTakeOff = false;
         this.pilotId = pilotId;
         pilotState = PilotStates.AT_TRANSFER_GATE;
-        this.depAirport = depAirport;
         this.plane = plane;
         this.destAirport = destAirport;
     }
