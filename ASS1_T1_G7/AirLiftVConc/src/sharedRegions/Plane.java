@@ -64,7 +64,7 @@ public class Plane {
      */
 
     public Plane(GeneralRepos repos) {
-        this.inF = 0;
+        inF = 0;
         passengers = new Passenger[SimulPar.N];
         for (int i = 0; i < SimulPar.N; i++)
             passengers[i] = null;
@@ -138,7 +138,8 @@ public class Plane {
 
         System.out.println("22222222");
         if (!(getInF() + DestinationAirport.getPTAL() == SimulPar.N)) {
-            while (pilot.getPilotState() != PilotStates.READY_FOR_BOARDING)          // the hostess waits for a passenger to arrive
+            System.out.println("?????????????");
+            while ((pilot.getPilotState() != PilotStates.READY_FOR_BOARDING) && (pilot.getPilotState() != PilotStates.WAITING_FOR_BOARDING))          // the hostess waits for a passenger to arrive
             {
                 try {
                     wait();
@@ -175,6 +176,7 @@ public class Plane {
             }
         }
         System.out.println("TO ASH AND DUST");
+        pilot.setReadyToTakeOff(false);
     }
 
     /**
@@ -203,8 +205,7 @@ public class Plane {
 
     public synchronized void boardThePlane() {
         int passengerId;                                            // passenger id
-
-        this.inF += 1;
+        inF += 1;
 
         passengerId = ((Passenger) Thread.currentThread()).getPassengerId();
         passengers[passengerId] = (Passenger) Thread.currentThread();
@@ -252,7 +253,7 @@ public class Plane {
 
         notifyAll();
 
-        while (this.inF != 0) {
+        while (inF != 0) {
             try {
                 wait();
             } catch (InterruptedException e) {
@@ -271,7 +272,7 @@ public class Plane {
     public synchronized void leaveThePlane() {
         int passengerId;                                            // passenger id
 
-        this.inF -= 1;
+        inF -= 1;
 
         passengerId = ((Passenger) Thread.currentThread()).getPassengerId();
         passengers[passengerId].setPassengerState(PassengerStates.AT_DESTINATION);
@@ -284,7 +285,7 @@ public class Plane {
             System.exit(1);
         }
 
-        if (this.inF == 0) {
+        if (inF == 0) {
             notifyAll();
         }
     }

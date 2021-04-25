@@ -193,7 +193,7 @@ public class DepartureAirport {
      * It is called by a passenger if the hostess has called him to check his documents.
      */
 
-    public synchronized void showDocuments() {
+    public synchronized void  showDocuments() {
         hostess.setReadyToCheckDocuments(true);
 
         notifyAll();
@@ -201,12 +201,12 @@ public class DepartureAirport {
         {
             try {
                 wait();
-                System.out.println("MY TIME IS NOW");
             } catch (InterruptedException e) {
                 GenericIO.writelnString("Interruption: " + e.getMessage());
                 System.exit(1);
             }
         }
+        System.out.println("MY TIME IS NOW");
     }
 
 
