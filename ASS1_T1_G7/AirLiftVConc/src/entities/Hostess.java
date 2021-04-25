@@ -26,6 +26,18 @@ public class Hostess extends Thread {
     private int hostessState;
 
     /**
+     * True if the hostess can check next passenger documents.
+     */
+
+    private boolean readyForNextPassenger;
+
+    /**
+     * True if the pilot communicated to the hostess that the plane is ready for boarding.
+     */
+
+    private boolean readyForNextFlight;
+
+    /**
      * True if the passenger has given his documents to the hostess for her to check.
      */
 
@@ -60,6 +72,9 @@ public class Hostess extends Thread {
 
     public Hostess(String name, int hostessId, DepartureAirport depAirport, Plane plane, DestinationAirport destAirport) {
         super(name);
+        this.readyToCheckDocuments = false;
+        this.readyForNextPassenger = false;
+        this.readyForNextFlight = false;
         this.hostessId = hostessId;
         hostessState = HostessStates.WAIT_FOR_FLIGHT;
         this.depAirport = depAirport;
@@ -85,6 +100,46 @@ public class Hostess extends Thread {
 
     public int getHostessId() {
         return hostessId;
+    }
+
+    /**
+     * Set if hostess is ready to check documents of the next passenger
+     *
+     * @param bool ready for next passenger
+     */
+
+    public void setReadyForNextPassenger(boolean bool) {
+        readyForNextPassenger = bool;
+    }
+
+    /**
+     * Get ready to check documents of the next passenger
+     *
+     * @return ready for next passenger
+     */
+
+    public boolean getReadyForNextPassenger() {
+        return readyForNextPassenger;
+    }
+
+    /**
+     * Set if the pilot said the plane is ready for next flight
+     *
+     * @param bool ready for next passenger
+     */
+
+    public void setReadyForNextFlight (boolean bool) {
+        readyForNextFlight = bool;
+    }
+
+    /**
+     * Get ready for next flight
+     *
+     * @return ready for next passenger
+     */
+
+    public boolean getReadyForNextFlight() {
+        return readyForNextFlight;
     }
 
     /**
@@ -141,11 +196,18 @@ public class Hostess extends Thread {
             System.out.println("hostess prepare for boarding");
             depAirport.prepareForPassBoarding();
 
-            while ((depAirport.getInQ() != 0 || plane.getInF() < SimulPar.MIN) && plane.getInF() < SimulPar.MAX) {
-                if (plane.getInF() + destAirport.getPTAL() == SimulPar.N) {
-                    endOp = true;
-                    break;
+
+            while (Plane.getInF() < SimulPar.MIN) {
+                if (Plane.getInF() + DestinationAirport.getPTAL() == SimulPar.N) {
+                    endOp = true; break;
                 }
+                System.out.println("hostess check documents");
+                depAirport.checkDocuments();
+                System.out.println("hostess wait for next passenger");
+                depAirport.waitForNextPassenger();
+            }
+            while (DepartureAirport.getInQ() != 0 && Plane.getInF() < SimulPar.MAX) {
+                if (endOp) break;
                 System.out.println("hostess check documents");
                 depAirport.checkDocuments();
                 System.out.println("hostess wait for next passenger");

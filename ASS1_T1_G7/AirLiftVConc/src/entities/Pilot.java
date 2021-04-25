@@ -61,6 +61,7 @@ public class Pilot extends Thread {
 
     public Pilot(String name, int pilotId, DepartureAirport depAirport, Plane plane, DestinationAirport destAirport) {
         super(name);
+        this.readyToTakeOff = false;
         this.pilotId = pilotId;
         pilotState = PilotStates.AT_TRANSFER_GATE;
         this.depAirport = depAirport;
@@ -91,7 +92,7 @@ public class Pilot extends Thread {
     /**
      * Set if hostess has informed the pilot that the plane is ready to take off.
      *
-     * @param bool ready to check documents
+     * @param bool ready to take off
      */
 
     public void setReadyToTakeOff(boolean bool) {

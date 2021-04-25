@@ -60,6 +60,7 @@ public class Passenger extends Thread {
 
     public Passenger(String name, int passengerId, DepartureAirport depAirport, Plane plane, DestinationAirport destAirport) {
         super(name);
+        this.readyToShowDocuments = false;
         this.passengerId = passengerId;
         passengerState = PassengerStates.GOING_TO_AIRPORT;
         this.depAirport = depAirport;

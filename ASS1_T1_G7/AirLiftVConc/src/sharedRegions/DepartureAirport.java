@@ -142,6 +142,7 @@ public class DepartureAirport {
                 System.exit(1);
             }
         }
+        ((Passenger) Thread.currentThread()).setReadyToShowDocuments(false);
     }
 
 
@@ -225,7 +226,7 @@ public class DepartureAirport {
 
         notifyAll();
 
-        while (inQ == 0)                             // the hostess waits for a passenger to arrive
+        while (!((Hostess) Thread.currentThread()).getReadyForNextPassenger())    // the hostess waits for a passenger to enter the plane
         {
             try {
                 wait();
@@ -234,5 +235,7 @@ public class DepartureAirport {
                 System.exit(1);
             }
         }
+
+        ((Hostess) Thread.currentThread()).setReadyForNextPassenger(false);
     }
 }

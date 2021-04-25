@@ -60,8 +60,9 @@ public class AirLift {
         plane = new Plane(repos);
         pilot = new Pilot("Pilot_" + (1), 0, depAirport, plane, desAirport);
         hostess = new Hostess("Hostess_" + (1), 0, depAirport, plane, desAirport);
-        for (int i = 0; i < SimulPar.N; i++)
+        for (int i = 0; i < SimulPar.N; i++) {
             passenger[i] = new Passenger("Passenger_" + (i + 1), i, depAirport, plane, desAirport);
+        }
 
         /* start of the simulation */
 
