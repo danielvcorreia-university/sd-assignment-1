@@ -53,10 +53,11 @@ public class Pilot extends Thread {
     /**
      * Instantiation of a pilot thread.
      *
-     * @param name       thread name
-     * @param pilotId    pilot id
-     * @param depAirport reference to the departure airport
-     * @param plane      reference to the plane
+     * @param name        thread name
+     * @param pilotId     pilot id
+     * @param depAirport  reference to the departure airport
+     * @param plane       reference to the plane
+     * @param destAirport reference to the destination airport
      */
 
     public Pilot(String name, int pilotId, DepartureAirport depAirport, Plane plane, DestinationAirport destAirport) {
@@ -154,7 +155,7 @@ public class Pilot extends Thread {
     /**
      * Flying the plane to the destination airport.
      * <p>
-     * Internal operation.
+     * Internal operation. Sleeps for an amount of time.
      */
 
     private void flyToDestinationPoint() {
@@ -169,7 +170,7 @@ public class Pilot extends Thread {
     /**
      * Flying the plane to the departure airport.
      * <p>
-     * Internal operation.
+     * Internal operation. Sleeps for an amount of time.
      */
 
     private void flyToDeparturePoint() {

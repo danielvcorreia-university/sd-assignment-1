@@ -9,18 +9,12 @@ import genclass.GenericIO;
 import main.SimulPar;
 
 /**
- *    Departure Airport.
+ *    Destination Airport.
  *
- *    It is responsible to keep a continuously updated account of the entities inside the departure airport
- *    and is implemented as an implicit monitor.
- *    All public methods are executed in mutual exclusion.
- *    There are four internal synchronization points: a single blocking point for the hostess, where she waits until
- *    the plane is ready for boarding so that she may proceed to the next flight;
- *    another single blocking point for the hostess, where she waits for the passengers to arrive at the airport;
- *    another single blocking point for the hostess, where she waits for the passenger at the front of the queue to
- *    show her his documents;
- *    and an array of blocking points, one per each passenger, where he both waits his turn to show the hostess
- *    his documents and waits until she has checked his documents and calls the next passenger.
+ *    It is responsible to keep a continuously updated account of the number of passengers that are already
+ *    in the destination airport.
+ *    There are two methods. One to get the total number os passengers in destination airport
+ *    and one to increment by one the number of passenger in destination airport.
  */
 
 public class DestinationAirport {
@@ -58,7 +52,7 @@ public class DestinationAirport {
     }
 
     /**
-     * Get number of passengers in destination.
+     * Set number of passengers in destination by one.
      */
 
     public void incPTAL() {

@@ -56,6 +56,7 @@ public class Passenger extends Thread {
      * @param passengerId passenger id
      * @param depAirport  reference to the departure airport
      * @param plane       reference to the plane
+     * @param destAirport reference to the destination airport
      */
 
     public Passenger(String name, int passengerId, DepartureAirport depAirport, Plane plane, DestinationAirport destAirport) {
@@ -147,7 +148,7 @@ public class Passenger extends Thread {
     /**
      * Travel to airport.
      * <p>
-     * Internal operation.
+     * Internal operation. Sleeps for an amount of time.
      */
 
     private void travelToAirport() {

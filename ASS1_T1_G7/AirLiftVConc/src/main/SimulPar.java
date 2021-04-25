@@ -19,7 +19,7 @@ public final class SimulPar
     public static final int MIN = 5;
 
     /**
-     *   Number of passengers.
+     *   Number of passengers who will fly to destination airport.
      */
 
     public static final int N = 21;

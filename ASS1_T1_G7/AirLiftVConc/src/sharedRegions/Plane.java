@@ -84,6 +84,7 @@ public class Plane {
 
     /**
      * Set number of passengers in flight.
+     * @param n set number of passengers in flight
      *
      */
 

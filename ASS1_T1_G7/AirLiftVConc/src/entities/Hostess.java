@@ -13,6 +13,7 @@ import sharedRegions.Plane;
  */
 
 public class Hostess extends Thread {
+
     /**
      * Hostess identification.
      */
@@ -64,10 +65,11 @@ public class Hostess extends Thread {
     /**
      * Instantiation of a hostess thread.
      *
-     * @param name       thread name
-     * @param hostessId  hostess id
-     * @param depAirport reference to the departure airport
-     * @param plane      reference to the plane
+     * @param name        thread name
+     * @param hostessId   hostess id
+     * @param depAirport  reference to the departure airport
+     * @param plane       reference to the plane
+     * @param destAirport reference to the destination airport
      */
 
     public Hostess(String name, int hostessId, DepartureAirport depAirport, Plane plane, DestinationAirport destAirport) {

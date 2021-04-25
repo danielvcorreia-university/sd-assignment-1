@@ -105,6 +105,7 @@ public class GeneralRepos {
     /**
      * Set hostess state.
      *
+     * @param idHostess unique identifier of hostess
      * @param state hostess state
      */
 
@@ -124,14 +125,22 @@ public class GeneralRepos {
         reportStatus();
     }
 
+    /**
+     * Set Info of the flight.
+     *
+     * @param nVoo number of the flight since the begin.
+     * @param npassageiros number of passengers a board.
+     */
 
     public synchronized void setInfoVoo(int nVoo, int npassageiros) {
         this.ndoVoo = nVoo;
         informacaoDosVoos[nVoo-1] = nVoo + ":" + npassageiros;
     }
 
-
-
+    /**
+     * Inicial status of the General Repository
+     *
+     */
 
     private void reportInitialStatus() {
         TextFile log = new TextFile(); // instantiation of a text file handler
@@ -151,7 +160,11 @@ public class GeneralRepos {
         reportStatus();
     }
 
-
+    /**
+     * Report the status of the General Repository
+     * <p>
+     * It prints the current states of the hostess, pilot and passengers when one of them changes states.
+     */
 
     private void reportStatus() {
         TextFile log = new TextFile(); // instantiation of a text file handler
@@ -260,28 +273,5 @@ public class GeneralRepos {
             GenericIO.writelnString("The operation of closing the file " + logFileName + " failed!");
             System.exit(1);
         }
-
     }
-
-    public synchronized void resumoDoPrograma() {
-        TextFile log = new TextFile(); // instantiation of a text file handler
-
-        String lineStatus = ""; // state line to be printed
-
-        if (!log.openForAppending(".", logFileName)) {
-            GenericIO.writelnString("The operation of opening for appending the file " + logFileName + " failed!");
-            System.exit(1);
-        }
-
-        log.writelnString("\nAirlift sum up:");
-        for(int i=0; i<ndoVoo; i++) {
-            String[] aux = informacaoDosVoos[i].split(":");
-            log.writelnString("\nFlight " + aux[0] + " transported " + aux[1] + " passengers." );
-        }
-        if (!log.close()) {
-            GenericIO.writelnString("The operation of closing the file " + logFileName + " failed!");
-            System.exit(1);
-        }
-    }
-
 }
