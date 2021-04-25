@@ -2,7 +2,10 @@ package sharedRegions;
 
 import commInfra.MemException;
 import commInfra.MemFIFO;
+import entities.Hostess;
+import entities.HostessStates;
 import entities.Passenger;
+import entities.PassengerStates;
 import genclass.GenericIO;
 import main.SimulPar;
 
@@ -36,6 +39,12 @@ public class DepartureAirport
     private final Passenger [] passengers;
 
     /**
+     *  Reference to hostess thread.
+     */
+
+    private Hostess hostess;
+
+    /**
      *   Waiting queue at the transfer gate.
      */
 
@@ -55,6 +64,7 @@ public class DepartureAirport
 
     public DepartureAirport(GeneralRepos repos)
     {
+        hostess = null;
         passengers = new Passenger [SimulPar.N];
         for (int i = 0; i < SimulPar.N; i++)
             passengers[i] = null;
@@ -70,49 +80,28 @@ public class DepartureAirport
     }
 
     /**
-     *  Operation go cut the hair.
+     *  Operation prepare for pass boarding
      *
-     *  It is called by a customer when he goes to the barber shop to try and cut his hair.
+     *  It is called by the hostess while waiting for passengers to arrive at the airport.
      *
-     *    @return true, if he did manage to cut his hair -
+     *    @return true, if her life cycle has come to an end -
      *            false, otherwise
      */
 
-    public synchronized boolean goCutHair ()
+
+    public synchronized boolean prepareForPassBoarding  ()
     {
-        int customerId;                                      // customer id
-
-        customerId = ((Customer) Thread.currentThread ()).getCustomerId ();
-        cust[customerId] = (Customer) Thread.currentThread ();
-        cust[customerId].setCustomerState (CustomerStates.WANTTOCUTHAIR);
-        repos.setCustomerState (customerId, cust[customerId].getCustomerState ());
-
-        if (sitCustomer.full ())                             // the customer checks how full is the barber shop
-            return (false);                                   // if it is packed full, he leaves to come back later
-
-        cust[customerId].setCustomerState (CustomerStates.WAITTURN);
-        repos.setCustomerState (customerId, cust[customerId].getCustomerState ());
-        nReqCut += 1;                                        // the customer requests a hair cut service,
-
-        try
-        { sitCustomer.write (customerId);                    // the customer sits down to wait for his turn
+        hostess = (Hostess) Thread.currentThread ();
+        while (nPassQueue == 0)                             // the hostess waits for a passenger to arrive
+        { try
+        { wait ();
         }
-        catch (MemException e)
-        { GenericIO.writelnString ("Insertion of customer id in waiting FIFO failed: " + e.getMessage ());
-            System.exit (1);
+        catch (InterruptedException e)
+        { return true;
+        }
         }
 
-        notifyAll ();                                        // the customer lets his presence be known
-
-        while (((Customer) Thread.currentThread ()).getCustomerState () != CustomerStates.DAYBYDAYLIFE)
-        { /* the customer waits for the service to be executed */
-            try
-            { wait ();
-            }
-            catch (InterruptedException e) {}
-        }
-
-        return (true);                                       // the customer leaves the barber shop after being serviced
+        return false;
     }
 
     /**
@@ -127,32 +116,130 @@ public class DepartureAirport
 
     public synchronized boolean waitInQueue()
     {
-        while (nPassQueue == 0)                             // passenger waits for his turn to show his documents
+        int passengerId;                                      // passenger id
+
+        passengerId = ((Passenger) Thread.currentThread ()).getPassengerId ();
+        passengers[passengerId] = (Passenger) Thread.currentThread ();
+        passengers[passengerId].setPassengerState (PassengerStates.IN_QUEUE);
+        repos.setPassengerState (passengerId, passengers[passengerId].getPassengerState());
+        nPassQueue ++;                                        // the customer requests a hair cut service,
+
+        try
+        { boardingQueue.write (passengerId);                    // the customer sits down to wait for his turn
+        }
+        catch (MemException e)
+        { GenericIO.writelnString ("Insertion of customer id in waiting FIFO failed: " + e.getMessage ());
+            System.exit (1);
+        }
+
+        notifyAll();
+
+        while (!(((Passenger) Thread.currentThread ()).getReadyToShowDocuments ()))
+        { try
+        { wait ();
+        }
+        catch (InterruptedException e) {}
+            { return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    /**
+     *  Operation check documents.
+     *
+     *  It is called by the hostess while waiting for the first costumer in queue to show his documents.
+     *
+     *    @return true, if her life cycle has come to an end -
+     *            false, otherwise
+     */
+
+    public synchronized boolean checkDocuments   ()
+    {
+        int hostessId,                                          //hostess id
+            passengerId;                                        //passenger id
+
+        hostessId = ((Hostess) Thread.currentThread ()).getHostessId ();
+        ((Hostess) Thread.currentThread ()).setHostessState (HostessStates.CHECK_PASSENGER);
+        repos.setHostessState (hostessId, ((Hostess) Thread.currentThread ()).getHostessState ());
+
+        nPassQueue--;
+        try
+        { passengerId = boardingQueue.read ();                            // the hostess calls the customer
+            if ((passengerId < 0) || (passengerId >= SimulPar.N))
+                throw new MemException ("illegal passenger id!");
+        }
+        catch (MemException e)
+        { GenericIO.writelnString ("Retrieval of passenger id from boarding FIFO failed: " + e.getMessage ());
+            passengerId = -1;
+            System.exit (1);
+        }
+
+        passengers[passengerId].setReadyToShowDocuments(true);
+
+        notifyAll();
+
+        while (!hostess.getReadyToCheckDocuments())             // the hostess waits for the passenger to give his documents
         { try
         { wait ();
         }
         catch (InterruptedException e)
-        { return true;
+        { return true;                                          // the hostess life cycle has come to an end
         }
         }
 
-        if (nPassQueue > 0) nPassQueue -= 1;                // the hostess takes notice that a passenger arrived
+        hostess.setReadyToCheckDocuments(false)
 
         return false;
     }
 
     /**
-     *  Operation go to sleep.
+     *  Operation show documents.
      *
-     *  It is called by a barber while waiting for customers to be serviced.
+     *  It is called by a passenger if the hostess has called him to check his documents.
      *
-     *    @return true, if his life cycle has come to an end -
+     *    @return customer id
+     */
+
+    public synchronized boolean showDocuments ()
+    {
+        hostess.setReadyToCheckDocuments(true);
+
+        notifyAll();
+        while (hostess.getHostessState () != HostessStates.WAIT_FOR_PASSENGER)   // the passenger waits until he is clear to proceed
+        { try
+        { wait ();
+        }
+        catch (InterruptedException e)
+        { return true;                                          // the passenger life cycle has come to an end
+        }
+        }
+
+        return false;
+    }
+
+
+    /**
+     *  Operation wait for next passenger.
+     *
+     *  It is called by the hostess while waiting for the next passenger in queue.
+     *
+     *    @return true, if her life cycle has come to an end -
      *            false, otherwise
      */
 
-
-    public synchronized boolean prepareForPassBoarding  ()
+    public synchronized boolean waitForNextPassenger   ()
     {
+        int hostessId;                                          //hostess id
+
+        hostessId = ((Hostess) Thread.currentThread ()).getHostessId ();
+        ((Hostess) Thread.currentThread ()).setHostessState (HostessStates.WAIT_FOR_PASSENGER);
+        repos.setHostessState (hostessId, ((Hostess) Thread.currentThread ()).getHostessState ());
+
+        notifyAll();
+
         while (nPassQueue == 0)                             // the hostess waits for a passenger to arrive
         { try
         { wait ();
@@ -162,114 +249,6 @@ public class DepartureAirport
         }
         }
 
-        if (nPassQueue > 0) nPassQueue -= 1;                // the hostess takes notice that a passenger arrived
-
         return false;
-    }
-
-
-    /**
-     *  Operation go to sleep.
-     *
-     *  It is called by a barber while waiting for customers to be serviced.
-     *
-     *    @return true, if his life cycle has come to an end -
-     *            false, otherwise
-     */
-
-    public synchronized boolean checkDocuments   ()
-    {
-        while (nReqCut == 0)                                 // the barber waits for a service request
-        { try
-        { wait ();
-        }
-        catch (InterruptedException e)
-        { return true;                                     // the barber life cycle has come to an end
-        }
-        }
-
-        if (nReqCut > 0) nReqCut -= 1;                       // the barber takes notice some one has requested his service
-
-        return false;
-    }
-
-    /**
-     *  Operation go to sleep.
-     *
-     *  It is called by a barber while waiting for customers to be serviced.
-     *
-     *    @return true, if his life cycle has come to an end -
-     *            false, otherwise
-     */
-
-    public synchronized boolean waitForNextPassenger   ()
-    {
-        while (nReqCut == 0)                                 // the barber waits for a service request
-        { try
-        { wait ();
-        }
-        catch (InterruptedException e)
-        { return true;                                     // the barber life cycle has come to an end
-        }
-        }
-
-        if (nReqCut > 0) nReqCut -= 1;                       // the barber takes notice some one has requested his service
-
-        return false;
-    }
-
-    /**
-     *  Operation call a customer.
-     *
-     *  It is called by a barber if a customer has requested his service.
-     *
-     *    @return customer id
-     */
-
-    public synchronized int callACustomer ()
-    {
-        int barberId,                                                  // barber id
-                customerId;                                                // customer id
-
-        barberId = ((Barber) Thread.currentThread ()).getBarberId ();
-        ((Barber) Thread.currentThread ()).setBarberState (BarberStates.INACTIVITY);
-        repos.setBarberState (barberId, ((Barber) Thread.currentThread ()).getBarberState ());
-
-        try
-        { customerId = sitCustomer.read ();                            // the barber calls the customer
-            if ((customerId < 0) || (customerId >= SimulPar.N))
-                throw new MemException ("illegal customer id!");
-        }
-        catch (MemException e)
-        { GenericIO.writelnString ("Retrieval of customer id from waiting FIFO failed: " + e.getMessage ());
-            customerId = -1;
-            System.exit (1);
-        }
-
-        cust[customerId].setCustomerState (CustomerStates.CUTTHEHAIR);
-        repos.setCustomerState (customerId, cust[customerId].getCustomerState ());
-
-        return (customerId);
-    }
-
-    /**
-     *  Operation receive payment.
-     *
-     *  It is called by a barber after finishing the customer hair cut.
-     *
-     *    @param customerId customer id
-     */
-
-    public synchronized void receivePayment (int customerId)
-    {
-        int barberId;                                        // barber id
-
-        barberId = ((Barber) Thread.currentThread ()).getBarberId ();
-        ((Barber) Thread.currentThread ()).setBarberState (BarberStates.SLEEPING);
-        cust[customerId].setCustomerState (CustomerStates.DAYBYDAYLIFE);
-        repos.setBarberCustomerState (barberId, ((Barber) Thread.currentThread ()).getBarberState (),
-                customerId, cust[customerId].getCustomerState ());
-
-        notifyAll ();                                        // the customer settles the account
     }
 }

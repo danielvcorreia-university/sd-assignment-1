@@ -25,6 +25,12 @@ public class Passenger extends Thread
     private int passengerState;
 
     /**
+     *  True if the passenger has been called by the hostess to show his documents.
+     */
+
+    private boolean readyToShowDocuments;
+
+    /**
      *  Reference to the departure airport.
      */
 
@@ -52,6 +58,7 @@ public class Passenger extends Thread
         passengerState = PassengerStates.GOING_TO_AIRPORT;
         this.depAirport = depAirport;
         this.plane = plane;
+        this.readyToShowDocuments = false;
     }
 
     /**
@@ -74,6 +81,28 @@ public class Passenger extends Thread
     public int getPassengerId ()
     {
         return passengerId;
+    }
+
+    /**
+     *   Set if passenger is ready to show documents to hostess.
+     *
+     *     @param bool ready to show documents
+     */
+
+    public void setReadyToShowDocuments (boolean bool)
+    {
+        readyToShowDocuments = bool;
+    }
+
+    /**
+     *   Get ready to show documents.
+     *
+     *     @return ready to show documents
+     */
+
+    public boolean getReadyToShowDocuments ()
+    {
+        return readyToShowDocuments;
     }
 
     /**
@@ -105,12 +134,12 @@ public class Passenger extends Thread
     @Override
     public void run ()
     {
-        this.travelToAirport()		            // Takes random time
-        DepartureAirport.waitInQueue()
-        DepartureAirport.showDocuments()
-        Plane.boardThePlane()
-        Plane.waitForEndOfFlight()
-        DestinationAirport.leaveThePlane()                             // if the barber shop is full, he tries later
+        this.travelToAirport()	;	            // Takes random time
+        DepartureAirport.waitInQueue();
+        DepartureAirport.showDocuments();
+        plane.boardThePlane();
+        plane.waitForEndOfFlight();
+        plane.leaveThePlane();             //see you later aligator
     }
 
     /**

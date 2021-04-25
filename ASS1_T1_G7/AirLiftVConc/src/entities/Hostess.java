@@ -25,6 +25,12 @@ public class Hostess extends Thread
     private int hostessState;
 
     /**
+     *  True if the passenger has given his documents to the hostess for her to check.
+     */
+
+    private boolean readyToCheckDocuments;
+
+    /**
      *  Reference to the departure airport.
      */
 
@@ -77,6 +83,28 @@ public class Hostess extends Thread
     }
 
     /**
+     *   Set if hostess has received the documents from the passenger.
+     *
+     *     @param bool ready to check documents
+     */
+
+    public void setReadyToCheckDocuments (boolean bool)
+    {
+        readyToCheckDocuments = bool;
+    }
+
+    /**
+     *   Get ready to check documents.
+     *
+     *     @return ready to check documents
+     */
+
+    public boolean getReadyToCheckDocuments ()
+    {
+        return readyToCheckDocuments;
+    }
+
+    /**
      *   Set hostess state.
      *
      *     @param state new hostess state
@@ -110,18 +138,18 @@ public class Hostess extends Thread
 
         while(true)
         {	if (noMorePassagers) break;
-            DepartureAirport.prepareForPassBoarding();
+            depAirport.prepareForPassBoarding();
 
-            while ( (!DepartureAirport.isQueueEmpty() or !Plane.minPassagers()) and !Plane.maxPassagers() )
+            while ( (!depAirport.isQueueEmpty() or !Plane.minPassagers()) and !Plane.maxPassagers() )
             {	if (Plane.passagersInFlight + DestinationAirport.passagersArrivedDestination == SimulationPar.N)
                 break;
-                DepartureAirport.checkDocuments(first in queue);
-                DepartureAirport.waitForNextPassager();
+                depAirport.checkDocuments(first in queue);
+                depAirport.waitForNextPassager();
 
             }
 
             Plane.informPlaneReadyToTakeOff();
-            noMorePassagers = DepartureAirport.waitForNextFlight();
+            noMorePassagers = depAirport.waitForNextFlight();
         }
     }
 }
