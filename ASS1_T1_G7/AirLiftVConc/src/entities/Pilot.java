@@ -137,21 +137,13 @@ public class Pilot extends Thread {
     public void run() {
         boolean endOp = false;                                       // flag signaling end of operations
 
-        System.out.println("pilot start");
-        System.out.println("pilot parked");
         plane.parkAtTransferGate();
         while (!endOp) {
-            System.out.println("pilot plane ready for boarding");
             plane.informPlaneReadyForBoarding();
-            System.out.println("pilot wait for all in boarding");
             plane.waitForAllInBoarding();
-            System.out.println("pilot fly to destination");
             flyToDestinationPoint();
-            System.out.println("pilot announce arrival");
             plane.announceArrival();
-            System.out.println("pilot fly to departure");
             flyToDeparturePoint();
-            System.out.println("pilot park at transfer gate");
             plane.parkAtTransferGate();
             if (Plane.getInF() + DestinationAirport.getPTAL() == SimulPar.N) {
                 endOp = true;

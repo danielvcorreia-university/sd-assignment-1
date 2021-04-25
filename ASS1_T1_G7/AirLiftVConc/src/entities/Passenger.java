@@ -135,15 +135,10 @@ public class Passenger extends Thread {
 
     @Override
     public void run() {
-        System.out.println("passenger travel to airport");
         this.travelToAirport();                // Takes random time
-        System.out.println("passenger wait in queue");
         depAirport.waitInQueue();
-        System.out.println("passenger show documents");
         depAirport.showDocuments();
-        System.out.println("passenger board the plane");
         depAirport.boardThePlane();
-        System.out.println("passenger wait for end of flight");
         plane.waitForEndOfFlight();
         plane.leaveThePlane();             //see you later aligator
         destAirport.incPTAL();

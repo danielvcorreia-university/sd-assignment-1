@@ -40,6 +40,12 @@ public class Plane {
     private static int inF;
 
     /**
+     * True if the pilot communicated to the hostess that the plane is ready for boarding.
+     */
+
+    private boolean nextFlight;
+
+    /**
      * Reference to passenger threads.
      */
 
@@ -59,6 +65,7 @@ public class Plane {
 
     public Plane(GeneralRepos repos) {
         inF = 0;
+        nextFlight = false;
         passengers = new Passenger[SimulPar.N];
         for (int i = 0; i < SimulPar.N; i++)
             passengers[i] = null;
@@ -92,11 +99,8 @@ public class Plane {
 
 
     public synchronized void parkAtTransferGate() {
-        int pilotId;                                          //hostess id
 
-        System.out.println("11111111");
         pilot = (Pilot) Thread.currentThread();
-        pilotId = ((Pilot) Thread.currentThread()).getPilotId();
         ((Pilot) Thread.currentThread()).setPilotState(PilotStates.AT_TRANSFER_GATE);
         repos.setPilotState(((Pilot) Thread.currentThread()).getPilotState());
     }
@@ -109,14 +113,12 @@ public class Plane {
 
 
     public synchronized void informPlaneReadyForBoarding() {
-        int pilotId;                                          //hostess id
 
-        while (hostess == null) {
-            System.out.println("Hostess is not initialized");
-            continue;
-        }
-        hostess.setReadyForNextFlight(true);
-        pilotId = ((Pilot) Thread.currentThread()).getPilotId();
+        //while (hostess == null) {
+        //    System.out.println("Hostess is not initialized");
+        //}
+        //hostess.setReadyForNextFlight(true);*/
+        nextFlight = true;
         ((Pilot) Thread.currentThread()).setPilotState(PilotStates.READY_FOR_BOARDING);
         repos.setPilotState(((Pilot) Thread.currentThread()).getPilotState());
         notifyAll();
@@ -137,10 +139,10 @@ public class Plane {
         ((Hostess) Thread.currentThread()).setHostessState(HostessStates.WAIT_FOR_FLIGHT);
         repos.setHostessState(hostessId, ((Hostess) Thread.currentThread()).getHostessState());
 
-        System.out.println("22222222");
         if (!(getInF() + DestinationAirport.getPTAL() == SimulPar.N)) {
-            System.out.println("?????????????");
-            while (!(((Hostess) Thread.currentThread()).getReadyForNextFlight()))          // the hostess waits for pilot signal
+
+            // while (!(((Hostess) Thread.currentThread()).getReadyForNextFlight()))          // the hostess waits for pilot signal
+            while(!nextFlight)
             {
                 try {
                     wait();
@@ -150,7 +152,8 @@ public class Plane {
                 }
             }
         }
-        ((Hostess) Thread.currentThread()).setReadyForNextFlight(false);
+        //((Hostess) Thread.currentThread()).setReadyForNextFlight(false);
+        nextFlight = false;
     }
 
     /**
@@ -161,22 +164,16 @@ public class Plane {
      */
 
     public synchronized void waitForAllInBoarding() {
-        int pilotId;
-
-        pilotId = ((Pilot) Thread.currentThread()).getPilotId();
         ((Pilot) Thread.currentThread()).setPilotState(PilotStates.WAITING_FOR_BOARDING);
         repos.setPilotState(((Pilot) Thread.currentThread()).getPilotState());
         while (!((Pilot) Thread.currentThread()).getReadyToTakeOff()) {
             try {
-                System.out.println("I'M WAKING UP");
-                System.out.println(hostess.getHostessState());
                 wait();
             } catch (InterruptedException e) {
                 GenericIO.writelnString("While waiting for passenger boarding: " + e.getMessage());
                 System.exit(1);
             }
         }
-        System.out.println("TO ASH AND DUST");
         pilot.setReadyToTakeOff(false);
         ((Pilot) Thread.currentThread()).setPilotState(PilotStates.FLYING_FORWARD);
         repos.setPilotState(((Pilot) Thread.currentThread()).getPilotState());
@@ -196,7 +193,6 @@ public class Plane {
         ((Hostess) Thread.currentThread()).setHostessState(HostessStates.READY_TO_FLY);
         repos.setHostessState(hostessId, ((Hostess) Thread.currentThread()).getHostessState());
         notifyAll();
-        System.out.println("end of take off???");
     }
 
     /**
@@ -230,9 +226,6 @@ public class Plane {
 
     /* TO CHANGE */
     public synchronized void announceArrival() {
-        int pilotId;
-
-        pilotId = ((Pilot) Thread.currentThread()).getPilotId();
         ((Pilot) Thread.currentThread()).setPilotState(PilotStates.DEBOARDING);
         repos.setPilotState(((Pilot) Thread.currentThread()).getPilotState());
 

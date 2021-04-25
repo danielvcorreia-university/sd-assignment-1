@@ -225,7 +225,6 @@ public class DepartureAirport {
         repos.setHostessState(hostessId, ((Hostess) Thread.currentThread()).getHostessState());
 
         notifyAll();
-        System.out.println("hostess count: "+hostess.getHostessCount());
         while ((inQ == 0 && hostess.getHostessCount() < 5 || (!((Hostess) Thread.currentThread()).getReadyForNextPassenger())) && !((Plane.getInF() + DestinationAirport.getPTAL()) == SimulPar.N))    // the hostess waits for a passenger to enter the plane
         {
             try {

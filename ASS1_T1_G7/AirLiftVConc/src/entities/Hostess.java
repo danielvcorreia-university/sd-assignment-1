@@ -38,12 +38,6 @@ public class Hostess extends Thread {
     private boolean readyForNextPassenger;
 
     /**
-     * True if the pilot communicated to the hostess that the plane is ready for boarding.
-     */
-
-    private boolean readyForNextFlight;
-
-    /**
      * True if the passenger has given his documents to the hostess for her to check.
      */
 
@@ -80,7 +74,6 @@ public class Hostess extends Thread {
         super(name);
         this.readyToCheckDocuments = false;
         this.readyForNextPassenger = false;
-        this.readyForNextFlight = false;
         this.hostessId = hostessId;
         hostessState = HostessStates.WAIT_FOR_FLIGHT;
         this.depAirport = depAirport;
@@ -149,26 +142,6 @@ public class Hostess extends Thread {
     }
 
     /**
-     * Set if the pilot said the plane is ready for next flight
-     *
-     * @param bool ready for next passenger
-     */
-
-    public void setReadyForNextFlight (boolean bool) {
-        readyForNextFlight = bool;
-    }
-
-    /**
-     * Get ready for next flight
-     *
-     * @return ready for next passenger
-     */
-
-    public boolean getReadyForNextFlight() {
-        return readyForNextFlight;
-    }
-
-    /**
      * Set if hostess has received the documents from the passenger.
      *
      * @param bool ready to check documents
@@ -215,37 +188,26 @@ public class Hostess extends Thread {
     @Override
     public void run() {
         boolean endOp = false;                                       // flag signaling end of operations
-        System.out.println("hostess start");
-        System.out.println("hostess wait for next flight");
         plane.waitForNextFlight();
         while (!endOp) {
-            System.out.println("hostess prepare for boarding");
             depAirport.prepareForPassBoarding();
 
 
             while (Plane.getInF() < SimulPar.MIN) {
-                System.out.println("hostess min on plane");
-                System.out.println("hostess check documents");
                 depAirport.checkDocuments();
-                System.out.println("hostess wait for next passenger");
                 depAirport.waitForNextPassenger();
                 if (Plane.getInF() + DestinationAirport.getPTAL() == SimulPar.N) {
                     endOp = true; break;
                 }
             }
             while (DepartureAirport.getInQ() != 0 && Plane.getInF() < SimulPar.MAX) {
-                System.out.println("hostess people in line");
-                System.out.println("hostess check documents");
                 depAirport.checkDocuments();
-                System.out.println("hostess wait for next passenger");
                 depAirport.waitForNextPassenger();
                 if (Plane.getInF() + DestinationAirport.getPTAL() == SimulPar.N) {
                     endOp = true; break;
                 }
             }
 
-            System.out.println("hostess inform plane ready to take off");
-            System.out.println(endOp);
             plane.informPlaneReadyToTakeOff();
             plane.waitForNextFlight();
         }
