@@ -2,10 +2,7 @@ package sharedRegions;
 
 import commInfra.MemException;
 import commInfra.MemFIFO;
-import entities.Hostess;
-import entities.HostessStates;
-import entities.Passenger;
-import entities.PassengerStates;
+import entities.*;
 import genclass.GenericIO;
 import main.SimulPar;
 
@@ -30,7 +27,7 @@ public class DepartureAirport
      *  Number of passengers in queue waiting for to show their documents to the hostess.
      */
 
-    private int nPassQueue;
+    private int inQ;
 
     /**
      *  Reference to passenger threads.
@@ -45,6 +42,12 @@ public class DepartureAirport
     private Hostess hostess;
 
     /**
+     *  Reference to pilot thread.
+     */
+
+    private Pilot pilot;
+
+    /**
      *   Waiting queue at the transfer gate.
      */
 
@@ -57,7 +60,7 @@ public class DepartureAirport
     private final GeneralRepos repos;
 
     /**
-     *  Barber shop instantiation.
+     *  Departure airport instantiation.
      *
      *    @param repos reference to the general repository
      */
@@ -80,28 +83,105 @@ public class DepartureAirport
     }
 
     /**
+     *   Get number of passengers in queue.
+     *
+     *     @return inQ
+     */
+
+    public int getInQ ()
+    {
+        return inQ;
+    }
+
+    /**
      *  Operation prepare for pass boarding
      *
      *  It is called by the hostess while waiting for passengers to arrive at the airport.
      *
-     *    @return true, if her life cycle has come to an end -
-     *            false, otherwise
      */
 
 
-    public synchronized boolean prepareForPassBoarding  ()
+    public synchronized void parkAtTransferGate  ()
     {
+        int pilotId;                                          //hostess id
+
+        pilot = (Pilot) Thread.currentThread ();
+        pilotId = ((Pilot) Thread.currentThread ()).getPilotId ();
+        ((Pilot) Thread.currentThread ()).setPilotState (PilotStates.AT_TRANSFER_GATE);
+        repos.setPilotState (pilotId, ((Pilot) Thread.currentThread ()).getPilotState ());
+    }
+
+    /**
+     *  Operation wait for next flight
+     *
+     *  It is called by the hostess while waiting for plane to be ready for boarding.
+     *
+     */
+
+
+    public synchronized void waitForNextFlight  ()
+    {
+        int hostessId;                                          //hostess id
+
         hostess = (Hostess) Thread.currentThread ();
-        while (nPassQueue == 0)                             // the hostess waits for a passenger to arrive
+        hostessId = ((Hostess) Thread.currentThread ()).getHostessId ();
+        ((Hostess) Thread.currentThread ()).setHostessState (HostessStates.WAIT_FOR_FLIGHT);
+        repos.setHostessState (hostessId, ((Hostess) Thread.currentThread ()).getHostessState ());
+
+        while (pilot.getPilotState() != PilotStates.READY_FOR_BOARDING)          // the hostess waits for a passenger to arrive
         { try
         { wait ();
         }
         catch (InterruptedException e)
-        { return true;
+        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
+            System.exit (1);
         }
         }
+    }
 
-        return false;
+    /**
+     *  Operation inform plane ready for boarding
+     *
+     *  It is called by the pilot to inform the hostess that the plane is ready for boarding.
+     *
+     */
+
+
+    public synchronized void informPlaneReadyForBoarding  ()
+    {
+        int pilotId;                                          //hostess id
+
+        pilotId = ((Pilot) Thread.currentThread ()).getPilotId ();
+        ((Pilot) Thread.currentThread ()).setPilotState (PilotStates.AT_TRANSFER_GATE);
+        repos.setPilotState (pilotId, ((Pilot) Thread.currentThread ()).getPilotState ());
+        notifyAll();
+    }
+
+    /**
+     *  Operation prepare for pass boarding
+     *
+     *  It is called by the hostess while waiting for passengers to arrive at the airport.
+     *
+     */
+
+
+    public synchronized void prepareForPassBoarding  ()
+    {
+        int hostessId;                                          //hostess id
+
+        hostessId = ((Hostess) Thread.currentThread ()).getHostessId ();
+        ((Hostess) Thread.currentThread ()).setHostessState (HostessStates.WAIT_FOR_PASSENGER);
+        repos.setHostessState (hostessId, ((Hostess) Thread.currentThread ()).getHostessState ());
+
+        while (inQ == 0)                             // the hostess waits for a passenger to arrive
+        { try
+        { wait ();
+        }
+        catch (InterruptedException e)
+        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
+            System.exit (1);
+        }
+        }
     }
 
     /**
@@ -109,12 +189,10 @@ public class DepartureAirport
      *
      *  It is called by a passenger while waiting for his turn to show his documents to the hostess.
      *
-     *    @return true, if his life cycle has come to an end -
-     *            false, otherwise
      */
 
 
-    public synchronized boolean waitInQueue()
+    public synchronized void waitInQueue()
     {
         int passengerId;                                      // passenger id
 
@@ -122,7 +200,7 @@ public class DepartureAirport
         passengers[passengerId] = (Passenger) Thread.currentThread ();
         passengers[passengerId].setPassengerState (PassengerStates.IN_QUEUE);
         repos.setPassengerState (passengerId, passengers[passengerId].getPassengerState());
-        nPassQueue ++;                                        // the customer requests a hair cut service,
+        inQ ++;                                        // the customer requests a hair cut service,
 
         try
         { boardingQueue.write (passengerId);                    // the customer sits down to wait for his turn
@@ -138,12 +216,11 @@ public class DepartureAirport
         { try
         { wait ();
         }
-        catch (InterruptedException e) {}
-            { return true;
-            }
+        catch (InterruptedException e)
+        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
+            System.exit (1);
         }
-
-        return false;
+        }
     }
 
 
@@ -152,11 +229,9 @@ public class DepartureAirport
      *
      *  It is called by the hostess while waiting for the first costumer in queue to show his documents.
      *
-     *    @return true, if her life cycle has come to an end -
-     *            false, otherwise
      */
 
-    public synchronized boolean checkDocuments   ()
+    public synchronized void checkDocuments   ()
     {
         int hostessId,                                          //hostess id
             passengerId;                                        //passenger id
@@ -165,7 +240,7 @@ public class DepartureAirport
         ((Hostess) Thread.currentThread ()).setHostessState (HostessStates.CHECK_PASSENGER);
         repos.setHostessState (hostessId, ((Hostess) Thread.currentThread ()).getHostessState ());
 
-        nPassQueue--;
+        inQ--;
         try
         { passengerId = boardingQueue.read ();                            // the hostess calls the customer
             if ((passengerId < 0) || (passengerId >= SimulPar.N))
@@ -186,13 +261,12 @@ public class DepartureAirport
         { wait ();
         }
         catch (InterruptedException e)
-        { return true;                                          // the hostess life cycle has come to an end
+        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
+            System.exit (1);
         }
         }
 
-        hostess.setReadyToCheckDocuments(false)
-
-        return false;
+        hostess.setReadyToCheckDocuments(false);
     }
 
     /**
@@ -200,10 +274,9 @@ public class DepartureAirport
      *
      *  It is called by a passenger if the hostess has called him to check his documents.
      *
-     *    @return customer id
      */
 
-    public synchronized boolean showDocuments ()
+    public synchronized void showDocuments ()
     {
         hostess.setReadyToCheckDocuments(true);
 
@@ -213,11 +286,10 @@ public class DepartureAirport
         { wait ();
         }
         catch (InterruptedException e)
-        { return true;                                          // the passenger life cycle has come to an end
+        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
+            System.exit (1);
         }
         }
-
-        return false;
     }
 
 
@@ -226,11 +298,9 @@ public class DepartureAirport
      *
      *  It is called by the hostess while waiting for the next passenger in queue.
      *
-     *    @return true, if her life cycle has come to an end -
-     *            false, otherwise
      */
 
-    public synchronized boolean waitForNextPassenger   ()
+    public synchronized void waitForNextPassenger()
     {
         int hostessId;                                          //hostess id
 
@@ -240,15 +310,14 @@ public class DepartureAirport
 
         notifyAll();
 
-        while (nPassQueue == 0)                             // the hostess waits for a passenger to arrive
+        while (inQ == 0)                             // the hostess waits for a passenger to arrive
         { try
         { wait ();
         }
         catch (InterruptedException e)
-        { return true;
+        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
+            System.exit (1);
         }
         }
-
-        return false;
     }
 }

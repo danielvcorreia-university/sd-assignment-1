@@ -178,7 +178,6 @@ public class GeneralRepos
                 case PassengerStates.AT_DESTINATION: lineStatus += " ATDS ";
                     break;
             }
-        lineStatus = "  " + ;
 
         log.writelnString (lineStatus);
         if (!log.close ())

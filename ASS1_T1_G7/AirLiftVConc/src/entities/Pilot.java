@@ -1,6 +1,9 @@
 package entities;
 
+import genclass.GenericIO;
+import main.SimulPar;
 import sharedRegions.DepartureAirport;
+import sharedRegions.DestinationAirport;
 import sharedRegions.Plane;
 
 /**
@@ -37,6 +40,12 @@ public class Pilot extends Thread
     private final Plane plane;
 
     /**
+     *  Reference to the destination airport.
+     */
+
+    private final DestinationAirport destAirport;
+
+    /**
      *   Instantiation of a pilot thread.
      *
      *     @param name thread name
@@ -45,13 +54,14 @@ public class Pilot extends Thread
      *     @param plane reference to the plane
      */
 
-    public Pilot (String name, int pilotId, DepartureAirport depAirport, Plane plane)
+    public Pilot (String name, int pilotId, DepartureAirport depAirport, Plane plane, DestinationAirport destAirport)
     {
         super (name);
         this.pilotId = pilotId;
         pilotState = PilotStates.AT_TRANSFER_GATE;
         this.depAirport = depAirport;
         this.plane = plane;
+        this.destAirport = destAirport;
     }
 
     /**
@@ -105,14 +115,21 @@ public class Pilot extends Thread
     @Override
     public void run ()
     {
-        while(true)
-        {	if (noMorePassagers) break;
-            DepartureAirport.informPlaneReadyForBoarding();
-            Plane.waitForAllInBoarding();
-            Plane.flyToDestinationPoint();
-            Plane.announceArrival();
-            Plane.flyToDeparturePoint();
-            noMorePassagers = DepartureAirport.parkAtTransferGate();
+        boolean endOp = false;                                       // flag signaling end of operations
+
+        depAirport.parkAtTransferGate();
+        while(!endOp)
+        {
+            depAirport.informPlaneReadyForBoarding();
+            plane.waitForAllInBoarding();
+            flyToDestinationPoint();
+            plane.announceArrival();
+            flyToDeparturePoint();
+            depAirport.parkAtTransferGate();
+            if (plane.getInF() + destAirport.getPTAL() == SimulPar.N)
+            {
+                endOp = true;
+            }
         }
     }
 
@@ -127,7 +144,10 @@ public class Pilot extends Thread
         try
         { sleep ((long) (1 + 60 * Math.random ()));
         }
-        catch (InterruptedException e) {}
+        catch (InterruptedException e)
+        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
+            System.exit (1);
+        }
     }
 
     /**
@@ -141,6 +161,9 @@ public class Pilot extends Thread
         try
         { sleep ((long) (1 + 57 * Math.random ()));
         }
-        catch (InterruptedException e) {}
+        catch (InterruptedException e)
+        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
+            System.exit (1);
+        }
     }
 }

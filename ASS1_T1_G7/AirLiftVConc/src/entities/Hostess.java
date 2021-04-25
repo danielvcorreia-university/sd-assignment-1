@@ -1,6 +1,8 @@
 package entities;
 
+import main.SimulPar;
 import sharedRegions.DepartureAirport;
+import sharedRegions.DestinationAirport;
 import sharedRegions.Plane;
 
 /**
@@ -43,6 +45,12 @@ public class Hostess extends Thread
     private final Plane plane;
 
     /**
+     *  Reference to the destination airport.
+     */
+
+    private final DestinationAirport destAirport;
+
+    /**
      *   Instantiation of a hostess thread.
      *
      *     @param name thread name
@@ -51,13 +59,14 @@ public class Hostess extends Thread
      *     @param plane reference to the plane
      */
 
-    public Hostess (String name, int hostessId, DepartureAirport depAirport, Plane plane)
+    public Hostess (String name, int hostessId, DepartureAirport depAirport, Plane plane, DestinationAirport destAirport)
     {
         super (name);
         this.hostessId = hostessId;
         hostessState = HostessStates.WAIT_FOR_FLIGHT;
         this.depAirport = depAirport;
         this.plane = plane;
+        this.destAirport = destAirport;
     }
 
     /**
@@ -133,23 +142,25 @@ public class Hostess extends Thread
     @Override
     public void run ()
     {
-        int customerId;                                      // customer id
-        boolean endOp;                                       // flag signaling end of operations
+        boolean endOp = false;                                       // flag signaling end of operations
 
-        while(true)
-        {	if (noMorePassagers) break;
+        depAirport.waitForNextFlight();
+        while(!endOp)
+        {
             depAirport.prepareForPassBoarding();
 
-            while ( (!depAirport.isQueueEmpty() or !Plane.minPassagers()) and !Plane.maxPassagers() )
-            {	if (Plane.passagersInFlight + DestinationAirport.passagersArrivedDestination == SimulationPar.N)
-                break;
-                depAirport.checkDocuments(first in queue);
-                depAirport.waitForNextPassager();
-
+            while ((depAirport.getInQ()!=0 || plane.getInF()<SimulPar.MIN) && plane.getInF()<SimulPar.MAX )
+            {	if (plane.getInF() + destAirport.getPTAL() == SimulPar.N)
+                {
+                    endOp = true;
+                    break;
+                }
+                depAirport.checkDocuments();
+                depAirport.waitForNextPassenger();
             }
 
-            Plane.informPlaneReadyToTakeOff();
-            noMorePassagers = depAirport.waitForNextFlight();
+            plane.informPlaneReadyToTakeOff();
+            depAirport.waitForNextFlight();
         }
     }
 }

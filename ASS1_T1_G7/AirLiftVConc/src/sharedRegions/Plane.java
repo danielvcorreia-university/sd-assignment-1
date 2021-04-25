@@ -38,7 +38,7 @@ public class Plane
      *  Reference to number of passengers in the plane.
      */
 
-    private Integer inF;
+    private int inF;
 
     /**
      *  Reference to passenger threads.
@@ -59,7 +59,7 @@ public class Plane
     private final GeneralRepos repos;
 
     /**
-     *  Barber shop instantiation.
+     *  Plane instantiation.
      *
      *    @param repos reference to the general repository
      */
@@ -79,6 +79,17 @@ public class Plane
             System.exit (1);
         }
         this.repos = repos;
+    }
+
+    /**
+     *   Get number of passengers in flight.
+     *
+     *     @return inF
+     */
+
+    public int getInF ()
+    {
+        return inF;
     }
 
     /**
@@ -169,7 +180,8 @@ public class Plane
         { wait ();
         }
         catch (InterruptedException e)
-        {
+        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
+            System.exit (1);
         }
         }
     }
@@ -197,7 +209,10 @@ public class Plane
             try
             { wait ();
             }
-            catch (InterruptedException e) {}
+            catch (InterruptedException e)
+            { GenericIO.writelnString ("Interruption: " + e.getMessage ());
+                System.exit (1);
+            }
         }
     }
 

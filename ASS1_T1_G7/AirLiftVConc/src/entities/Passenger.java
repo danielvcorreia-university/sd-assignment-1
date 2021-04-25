@@ -1,6 +1,8 @@
 package entities;
 
+import genclass.GenericIO;
 import sharedRegions.DepartureAirport;
+import sharedRegions.DestinationAirport;
 import sharedRegions.Plane;
 
 /**
@@ -43,6 +45,12 @@ public class Passenger extends Thread
     private final Plane plane;
 
     /**
+     *  Reference to the destination airport.
+     */
+
+    private final DestinationAirport destAirport;
+
+    /**
      *   Instantiation of a passenger thread.
      *
      *     @param name thread name
@@ -51,7 +59,7 @@ public class Passenger extends Thread
      *     @param plane reference to the plane
      */
 
-    public Passenger (String name, int passengerId, DepartureAirport depAirport, Plane plane)
+    public Passenger (String name, int passengerId, DepartureAirport depAirport, Plane plane, DestinationAirport destAirport)
     {
         super (name);
         this.passengerId = passengerId;
@@ -59,6 +67,7 @@ public class Passenger extends Thread
         this.depAirport = depAirport;
         this.plane = plane;
         this.readyToShowDocuments = false;
+        this.destAirport = destAirport;
     }
 
     /**
@@ -135,11 +144,12 @@ public class Passenger extends Thread
     public void run ()
     {
         this.travelToAirport()	;	            // Takes random time
-        DepartureAirport.waitInQueue();
-        DepartureAirport.showDocuments();
+        depAirport.waitInQueue();
+        depAirport.showDocuments();
         plane.boardThePlane();
         plane.waitForEndOfFlight();
         plane.leaveThePlane();             //see you later aligator
+        destAirport.incPTAL();
     }
 
     /**
@@ -153,7 +163,10 @@ public class Passenger extends Thread
         try
         { sleep ((long) (1 + 100 * Math.random ()));
         }
-        catch (InterruptedException e) {}
+        catch (InterruptedException e)
+        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
+            System.exit (1);
+        }
     }
 }
 

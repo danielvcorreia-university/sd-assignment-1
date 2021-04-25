@@ -57,13 +57,13 @@ public class AirLift {
 
         /* TO CHANGE */
         repos = new GeneralRepos (fileName);
-        desAirport = new DestinationAirport();
+        desAirport = new DestinationAirport(repos);
         depAirport = new DepartureAirport(repos);
         plane = new Plane (repos);
         pilot = new Pilot ("Pilot_" + (1), 0, depAirport, plane, desAirport);
-        hostess = new Hostess ("Hostess_" + (1), 0, depAirport, desAirport, plane, desAirport);
+        hostess = new Hostess ("Hostess_" + (1), 0, depAirport, plane, desAirport);
         for (int i = 0; i < SimulPar.N; i++)
-            passenger[i] = new Passenger ("Passenger_" + (i+1), i, depAirport, plane);
+            passenger[i] = new Passenger ("Passenger_" + (i+1), i, depAirport, plane, desAirport);
 
         /* start of the simulation */
 
@@ -79,7 +79,10 @@ public class AirLift {
         { try
         { passenger[i].join ();
         }
-        catch (InterruptedException e) {}
+        catch (InterruptedException e)
+        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
+            System.exit (1);
+        }
             GenericIO.writelnString ("The passenger " + (i+1) + " has terminated.");
         }
         GenericIO.writelnString ();
@@ -90,7 +93,10 @@ public class AirLift {
             try
             { pilot.join ();
             }
-            catch (InterruptedException e) {}
+            catch (InterruptedException e)
+            { GenericIO.writelnString ("Interruption: " + e.getMessage ());
+                System.exit (1);
+            }
             GenericIO.writelnString ("The pilot " + (1) + " has terminated.");
 
         GenericIO.writelnString ();
@@ -101,7 +107,10 @@ public class AirLift {
         try
         { hostess.join ();
         }
-        catch (InterruptedException e) {}
+        catch (InterruptedException e)
+        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
+            System.exit (1);
+        }
         GenericIO.writelnString ("The hostess " + (1) + " has terminated.");
 
         GenericIO.writelnString ();
