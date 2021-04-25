@@ -142,7 +142,7 @@ public class Passenger extends Thread {
         System.out.println("passenger show documents");
         depAirport.showDocuments();
         System.out.println("passenger board the plane");
-        plane.boardThePlane();
+        depAirport.boardThePlane();
         System.out.println("passenger wait for end of flight");
         plane.waitForEndOfFlight();
         plane.leaveThePlane();             //see you later aligator

@@ -184,7 +184,7 @@ public class Pilot extends Thread {
         try {
             sleep((long) (1 + 149 * Math.random()));
         } catch (InterruptedException e) {
-            GenericIO.writelnString("Interruption: " + e.getMessage());
+            GenericIO.writelnString("asdInterruption: " + e.getMessage());
             System.exit(1);
         }
     }

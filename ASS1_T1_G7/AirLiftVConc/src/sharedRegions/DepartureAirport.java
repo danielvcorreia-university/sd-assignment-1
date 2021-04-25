@@ -97,7 +97,7 @@ public class DepartureAirport {
         hostessId = ((Hostess) Thread.currentThread()).getHostessId();
         ((Hostess) Thread.currentThread()).setHostessState(HostessStates.WAIT_FOR_PASSENGER);
         repos.setHostessState(hostessId, ((Hostess) Thread.currentThread()).getHostessState());
-
+        hostess.setHostessCount(0);
         while (inQ == 0)                             // the hostess waits for a passenger to arrive
         {
             try {
@@ -161,6 +161,7 @@ public class DepartureAirport {
         repos.setHostessState(hostessId, ((Hostess) Thread.currentThread()).getHostessState());
 
         inQ--;
+        hostess.setHostessCount(hostess.getHostessCount()+1);
         try {
             passengerId = boardingQueue.read();                            // the hostess calls the customer
             if ((passengerId < 0) || (passengerId >= SimulPar.N))
@@ -207,7 +208,6 @@ public class DepartureAirport {
                 System.exit(1);
             }
         }
-        System.out.println("MY TIME IS NOW");
     }
 
 
@@ -225,8 +225,8 @@ public class DepartureAirport {
         repos.setHostessState(hostessId, ((Hostess) Thread.currentThread()).getHostessState());
 
         notifyAll();
-
-        while (!((Hostess) Thread.currentThread()).getReadyForNextPassenger())    // the hostess waits for a passenger to enter the plane
+        System.out.println("hostess count: "+hostess.getHostessCount());
+        while ((inQ == 0 && hostess.getHostessCount() < 5 || (!((Hostess) Thread.currentThread()).getReadyForNextPassenger())) && !((Plane.getInF() + DestinationAirport.getPTAL()) == SimulPar.N))    // the hostess waits for a passenger to enter the plane
         {
             try {
                 wait();
@@ -237,5 +237,22 @@ public class DepartureAirport {
         }
 
         ((Hostess) Thread.currentThread()).setReadyForNextPassenger(false);
+    }
+
+    /**
+     * Operation boarding the plane
+     * <p>
+     * It is called by the passengers when they are allowed to enter the plane.
+     */
+
+    public synchronized void boardThePlane() {
+        int passengerId;                                            // passenger id
+
+        Plane.setInF(Plane.getInF()+1);
+        hostess.setReadyForNextPassenger(true);
+        passengerId = ((Passenger) Thread.currentThread()).getPassengerId();
+        passengers[passengerId].setPassengerState(PassengerStates.IN_FLIGHT);
+        repos.setPassengerState(passengerId, passengers[passengerId].getPassengerState());
+        notifyAll();
     }
 }

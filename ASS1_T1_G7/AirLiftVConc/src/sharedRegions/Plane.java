@@ -46,12 +46,6 @@ public class Plane {
     private final Passenger[] passengers;
 
     /**
-     * Waiting queue of the passengers a board to destination airport.
-     */
-
-    private MemFIFO<Integer> passengersABoard;
-
-    /**
      * Reference to the general repository.
      */
 
@@ -68,13 +62,6 @@ public class Plane {
         passengers = new Passenger[SimulPar.N];
         for (int i = 0; i < SimulPar.N; i++)
             passengers[i] = null;
-        try {
-            passengersABoard = new MemFIFO<>(new Integer[SimulPar.MAX]);
-        } catch (MemException e) {
-            GenericIO.writelnString("Instantiation of plane FIFO failed: " + e.getMessage());
-            passengersABoard = null;
-            System.exit(1);
-        }
         this.repos = repos;
     }
 
@@ -86,6 +73,15 @@ public class Plane {
 
     public static int getInF() {
         return inF;
+    }
+
+    /**
+     * Set number of passengers in flight.
+     *
+     */
+
+    public static void setInF(int n) {
+       inF = n;
     }
 
     /**
@@ -204,31 +200,6 @@ public class Plane {
     }
 
     /**
-     * Operation boarding the plane
-     * <p>
-     * It is called by the passengers when they are allowed to enter the plane.
-     */
-
-    public synchronized void boardThePlane() {
-        int passengerId;                                            // passenger id
-        inF += 1;
-
-        hostess.setReadyForNextPassenger(true);
-        passengerId = ((Passenger) Thread.currentThread()).getPassengerId();
-        passengers[passengerId] = (Passenger) Thread.currentThread();
-        passengers[passengerId].setPassengerState(PassengerStates.IN_FLIGHT);
-        repos.setPassengerState(passengerId, passengers[passengerId].getPassengerState());
-        notifyAll();
-
-        try {
-            passengersABoard.write(passengerId);                     // the passenger sits down on plane and waits
-        } catch (MemException e) {
-            GenericIO.writelnString("Insertion of passenger id in plane waiting FIFO failed: " + e.getMessage());
-            System.exit(1);
-        }
-    }
-
-    /**
      * Operation wait for end of flight
      * <p>
      * It is called by the passengers when they are inside the plane and begin their waiting journey.
@@ -236,6 +207,11 @@ public class Plane {
 
     /* to change */
     public synchronized void waitForEndOfFlight() {
+        int passengerId;                                            // passenger id
+
+        passengerId = ((Passenger) Thread.currentThread()).getPassengerId();
+        passengers[passengerId] = (Passenger) Thread.currentThread();
+
         while ((pilot.getPilotState() != PilotStates.DEBOARDING)) {
             try {
                 wait();
@@ -289,13 +265,6 @@ public class Plane {
         passengerId = ((Passenger) Thread.currentThread()).getPassengerId();
         passengers[passengerId].setPassengerState(PassengerStates.AT_DESTINATION);
         repos.setPassengerState(passengerId, passengers[passengerId].getPassengerState());
-
-        try {
-            passengersABoard.read();                     // the passenger leaves the plane
-        } catch (MemException e) {
-            GenericIO.writelnString("Removal of passenger id in plane waiting FIFO failed: " + e.getMessage());
-            System.exit(1);
-        }
 
         if (inF == 0) {
             notifyAll();

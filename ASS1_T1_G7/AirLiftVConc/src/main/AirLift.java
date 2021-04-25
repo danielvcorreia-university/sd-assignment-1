@@ -85,7 +85,7 @@ public class AirLift {
         }
         GenericIO.writelnString();
         while (pilot.isAlive()) {
-            pilot.interrupt();
+            //pilot.interrupt();
             Thread.yield();
         }
         try {
@@ -98,7 +98,7 @@ public class AirLift {
 
         GenericIO.writelnString();
         while (hostess.isAlive()) {
-            hostess.interrupt();
+            //hostess.interrupt();
             Thread.yield();
         }
         try {

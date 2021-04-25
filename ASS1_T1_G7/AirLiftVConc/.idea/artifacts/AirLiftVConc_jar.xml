@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="AirLiftVConc:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/AirLiftVConc_jar</output-path>
+    <root id="archive" name="AirLiftVConc.jar">
+      <element id="module-output" name="AirLiftVConc" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../genclass.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

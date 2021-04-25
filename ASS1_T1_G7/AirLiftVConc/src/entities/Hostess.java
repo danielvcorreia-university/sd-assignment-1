@@ -26,6 +26,12 @@ public class Hostess extends Thread {
     private int hostessState;
 
     /**
+     * Count number of passengers on the plane.
+     */
+
+    private int hostessCount;
+
+    /**
      * True if the hostess can check next passenger documents.
      */
 
@@ -100,6 +106,26 @@ public class Hostess extends Thread {
 
     public int getHostessId() {
         return hostessId;
+    }
+
+    /**
+     * Set hostess count.
+     *
+     * @param count hostess count
+     */
+
+    public void setHostessCount(int count) {
+        hostessCount = count;
+    }
+
+    /**
+     * Get hostess count.
+     *
+     * @return hostess count
+     */
+
+    public int getHostessCount() {
+        return hostessCount;
     }
 
     /**
@@ -198,23 +224,28 @@ public class Hostess extends Thread {
 
 
             while (Plane.getInF() < SimulPar.MIN) {
+                System.out.println("hostess min on plane");
+                System.out.println("hostess check documents");
+                depAirport.checkDocuments();
+                System.out.println("hostess wait for next passenger");
+                depAirport.waitForNextPassenger();
                 if (Plane.getInF() + DestinationAirport.getPTAL() == SimulPar.N) {
                     endOp = true; break;
                 }
-                System.out.println("hostess check documents");
-                depAirport.checkDocuments();
-                System.out.println("hostess wait for next passenger");
-                depAirport.waitForNextPassenger();
             }
             while (DepartureAirport.getInQ() != 0 && Plane.getInF() < SimulPar.MAX) {
-                if (endOp) break;
+                System.out.println("hostess people in line");
                 System.out.println("hostess check documents");
                 depAirport.checkDocuments();
                 System.out.println("hostess wait for next passenger");
                 depAirport.waitForNextPassenger();
+                if (Plane.getInF() + DestinationAirport.getPTAL() == SimulPar.N) {
+                    endOp = true; break;
+                }
             }
 
             System.out.println("hostess inform plane ready to take off");
+            System.out.println(endOp);
             plane.informPlaneReadyToTakeOff();
             plane.waitForNextFlight();
         }
