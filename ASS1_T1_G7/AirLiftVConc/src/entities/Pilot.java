@@ -153,7 +153,7 @@ public class Pilot extends Thread {
             flyToDeparturePoint();
             System.out.println("pilot park at transfer gate");
             plane.parkAtTransferGate();
-            if (plane.getInF() + destAirport.getPTAL() == SimulPar.N) {
+            if (Plane.getInF() + DestinationAirport.getPTAL() == SimulPar.N) {
                 endOp = true;
             }
         }
@@ -184,7 +184,7 @@ public class Pilot extends Thread {
         try {
             sleep((long) (1 + 149 * Math.random()));
         } catch (InterruptedException e) {
-            GenericIO.writelnString("asdInterruption: " + e.getMessage());
+            GenericIO.writelnString("Interruption: " + e.getMessage());
             System.exit(1);
         }
     }
