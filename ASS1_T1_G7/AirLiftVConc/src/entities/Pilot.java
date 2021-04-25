@@ -122,7 +122,7 @@ public class Pilot extends Thread
      *  Internal operation.
      */
 
-    private void flyToDestinationPoint  ()
+    private void flyToDestinationPoint ()
     {
         try
         { sleep ((long) (1 + 60 * Math.random ()));
