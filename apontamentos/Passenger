@@ -26,3 +26,5 @@ notas:
 	leaveThePlane()
 		Neste método, as threads acordam por concorrencia e a pessoa que sai da queue é sempre a primeira, o que não
 		vai corresponder com a pessoa que sai no avião (talvez arranjar)
+
+	podemos meter getters na shared region?
