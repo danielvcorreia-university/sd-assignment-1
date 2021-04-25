@@ -13,50 +13,54 @@ import sharedRegions.Plane;
  *   Static solution.
  */
 
-public class Pilot extends Thread
-{
+public class Pilot extends Thread {
     /**
-     *  Pilot identification.
+     * Pilot identification.
      */
 
     private int pilotId;
 
     /**
-     *  Pilot state.
+     * Pilot state.
      */
 
     private int pilotState;
 
     /**
-     *  Reference to the departure airport.
+     * True if the plane is ready to take off.
+     */
+
+    private boolean readyToTakeOff;
+
+    /**
+     * Reference to the departure airport.
      */
 
     private final DepartureAirport depAirport;
 
     /**
-     *  Reference to the plane.
+     * Reference to the plane.
      */
 
     private final Plane plane;
 
     /**
-     *  Reference to the destination airport.
+     * Reference to the destination airport.
      */
 
     private final DestinationAirport destAirport;
 
     /**
-     *   Instantiation of a pilot thread.
+     * Instantiation of a pilot thread.
      *
-     *     @param name thread name
-     *     @param pilotId pilot id
-     *     @param depAirport reference to the departure airport
-     *     @param plane reference to the plane
+     * @param name       thread name
+     * @param pilotId    pilot id
+     * @param depAirport reference to the departure airport
+     * @param plane      reference to the plane
      */
 
-    public Pilot (String name, int pilotId, DepartureAirport depAirport, Plane plane, DestinationAirport destAirport)
-    {
-        super (name);
+    public Pilot(String name, int pilotId, DepartureAirport depAirport, Plane plane, DestinationAirport destAirport) {
+        super(name);
         this.pilotId = pilotId;
         pilotState = PilotStates.AT_TRANSFER_GATE;
         this.depAirport = depAirport;
@@ -65,105 +69,122 @@ public class Pilot extends Thread
     }
 
     /**
-     *   Set pilot id.
+     * Set pilot id.
      *
-     *     @param id pilot id
+     * @param id pilot id
      */
 
-    public void setPilotId (int id)
-    {
+    public void setPilotId(int id) {
         pilotId = id;
     }
 
     /**
-     *   Get pilot id.
+     * Get pilot id.
      *
-     *     @return pilot id
+     * @return pilot id
      */
 
-    public int getPilotId ()
-    {
+    public int getPilotId() {
         return pilotId;
     }
 
     /**
-     *   Set pilot state.
+     * Set if hostess has informed the pilot that the plane is ready to take off.
      *
-     *     @param state new pilot state
+     * @param bool ready to check documents
      */
 
-    public void setPilotState (int state)
-    {
+    public void setReadyToTakeOff(boolean bool) {
+        readyToTakeOff = bool;
+    }
+
+    /**
+     * Get ready to take off
+     *
+     * @return ready to take off
+     */
+
+    public boolean getReadyToTakeOff() {
+        return readyToTakeOff;
+    }
+
+    /**
+     * Set pilot state.
+     *
+     * @param state new pilot state
+     */
+
+    public void setPilotState(int state) {
         pilotState = state;
     }
 
     /**
-     *   Get pilot state.
+     * Get pilot state.
      *
-     *     @return pilot state
+     * @return pilot state
      */
 
-    public int getPilotState ()
-    {
+    public int getPilotState() {
         return pilotState;
     }
 
     /**
-     *   Life cycle of the pilot.
+     * Life cycle of the pilot.
      */
 
     @Override
-    public void run ()
-    {
+    public void run() {
         boolean endOp = false;                                       // flag signaling end of operations
 
-        depAirport.parkAtTransferGate();
-        while(!endOp)
-        {
-            depAirport.informPlaneReadyForBoarding();
+        System.out.println("pilot start");
+        System.out.println("pilot parked");
+        plane.parkAtTransferGate();
+        while (!endOp) {
+            System.out.println("pilot plane ready for boarding");
+            plane.informPlaneReadyForBoarding();
+            System.out.println("pilot wait for all in boarding");
             plane.waitForAllInBoarding();
+            System.out.println("pilot fly to destination");
             flyToDestinationPoint();
+            System.out.println("pilot announce arrival");
             plane.announceArrival();
+            System.out.println("pilot fly to departure");
             flyToDeparturePoint();
-            depAirport.parkAtTransferGate();
-            if (plane.getInF() + destAirport.getPTAL() == SimulPar.N)
-            {
+            System.out.println("pilot park at transfer gate");
+            plane.parkAtTransferGate();
+            if (plane.getInF() + destAirport.getPTAL() == SimulPar.N) {
                 endOp = true;
             }
         }
     }
 
     /**
-     *  Flying the plane to the destination airport.
-     *
-     *  Internal operation.
+     * Flying the plane to the destination airport.
+     * <p>
+     * Internal operation.
      */
 
-    private void flyToDestinationPoint ()
-    {
-        try
-        { sleep ((long) (1 + 60 * Math.random ()));
-        }
-        catch (InterruptedException e)
-        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
-            System.exit (1);
+    private void flyToDestinationPoint() {
+        try {
+            sleep((long) (1 + 160 * Math.random()));
+        } catch (InterruptedException e) {
+            GenericIO.writelnString("Interruption: " + e.getMessage());
+            System.exit(1);
         }
     }
 
     /**
-     *  Flying the plane to the departure airport.
-     *
-     *  Internal operation.
+     * Flying the plane to the departure airport.
+     * <p>
+     * Internal operation.
      */
 
-    private void flyToDeparturePoint ()
-    {
-        try
-        { sleep ((long) (1 + 57 * Math.random ()));
-        }
-        catch (InterruptedException e)
-        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
-            System.exit (1);
+    private void flyToDeparturePoint() {
+        try {
+            sleep((long) (1 + 149 * Math.random()));
+        } catch (InterruptedException e) {
+            GenericIO.writelnString("Interruption: " + e.getMessage());
+            System.exit(1);
         }
     }
 }

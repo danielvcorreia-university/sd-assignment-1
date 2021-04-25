@@ -20,225 +20,268 @@ import genclass.GenericIO;
  *    his documents and waits until she has checked his documents and calls the next passenger.
  */
 
-public class Plane
-{
+public class Plane {
     /**
-     *  Reference to hostess thread.
+     * Reference to hostess thread.
      */
 
     private Hostess hostess;
 
     /**
-     *  Reference to pilot thread.
+     * Reference to pilot thread.
      */
 
     private Pilot pilot;
 
     /**
-     *  Reference to number of passengers in the plane.
+     * Reference to number of passengers in the plane.
      */
 
-    private int inF;
+    private static int inF;
 
     /**
-     *  Reference to passenger threads.
+     * Reference to passenger threads.
      */
 
-    private final Passenger [] passengers;
+    private final Passenger[] passengers;
 
     /**
-     *   Waiting queue of the passengers a board to destination airport.
+     * Waiting queue of the passengers a board to destination airport.
      */
 
     private MemFIFO<Integer> passengersABoard;
 
     /**
-     *   Reference to the general repository.
+     * Reference to the general repository.
      */
 
     private final GeneralRepos repos;
 
     /**
-     *  Plane instantiation.
+     * Plane instantiation.
      *
-     *    @param repos reference to the general repository
+     * @param repos reference to the general repository
      */
 
-    public Plane (GeneralRepos repos)
-    {
+    public Plane(GeneralRepos repos) {
         this.inF = 0;
-        passengers = new Passenger [SimulPar.N];
+        passengers = new Passenger[SimulPar.N];
         for (int i = 0; i < SimulPar.N; i++)
             passengers[i] = null;
-        try
-        { passengersABoard = new MemFIFO<> (new Integer [SimulPar.MAX]);
-        }
-        catch (MemException e)
-        { GenericIO.writelnString ("Instantiation of plane FIFO failed: " + e.getMessage ());
+        try {
+            passengersABoard = new MemFIFO<>(new Integer[SimulPar.MAX]);
+        } catch (MemException e) {
+            GenericIO.writelnString("Instantiation of plane FIFO failed: " + e.getMessage());
             passengersABoard = null;
-            System.exit (1);
+            System.exit(1);
         }
         this.repos = repos;
     }
 
     /**
-     *   Get number of passengers in flight.
+     * Get number of passengers in flight.
      *
-     *     @return inF
+     * @return inF
      */
 
-    public int getInF ()
-    {
+    public static int getInF() {
         return inF;
     }
 
     /**
-     *  Operation wait for all passengers to board the plane.
-     *
-     *  It is called by the pilot after he announced the hostess
-     *  that the plane is ready for boarding .
-     *
+     * Operation prepare for pass boarding
+     * <p>
+     * It is called by the hostess while waiting for passengers to arrive at the airport.
      */
 
-    public synchronized void waitForAllInBoarding ()
-    {
-        int pilotId;
 
-        pilotId = ((Pilot) Thread.currentThread ()).getPilotId();
-        this.pilot = (Pilot) Thread.currentThread();
-        this.pilot.setPilotState(PilotStates.WAITING_FOR_BOARDING);
-        repos.setPilotState (pilotId, this.pilot.getPilotState ());
+    public synchronized void parkAtTransferGate() {
+        int pilotId;                                          //hostess id
 
-        while (this.hostess.getHostessState() != HostessStates.READY_TO_FLY)
-        { try
-        { wait ();
-        }
-        catch (InterruptedException e)
-        {   GenericIO.writelnString ("While waiting for passenger boarding: " + e.getMessage ());
-            System.exit (1);
-        }
+        System.out.println("11111111");
+        pilot = (Pilot) Thread.currentThread();
+        pilotId = ((Pilot) Thread.currentThread()).getPilotId();
+        ((Pilot) Thread.currentThread()).setPilotState(PilotStates.AT_TRANSFER_GATE);
+        repos.setPilotState(pilotId, ((Pilot) Thread.currentThread()).getPilotState());
+    }
+
+    /**
+     * Operation inform plane ready for boarding
+     * <p>
+     * It is called by the pilot to inform the hostess that the plane is ready for boarding.
+     */
+
+
+    public synchronized void informPlaneReadyForBoarding() {
+        int pilotId;                                          //hostess id
+
+        pilotId = ((Pilot) Thread.currentThread()).getPilotId();
+        ((Pilot) Thread.currentThread()).setPilotState(PilotStates.READY_FOR_BOARDING);
+        repos.setPilotState(pilotId, ((Pilot) Thread.currentThread()).getPilotState());
+        notifyAll();
+    }
+
+    /**
+     * Operation wait for next flight
+     * <p>
+     * It is called by the hostess while waiting for plane to be ready for boarding.
+     */
+
+
+    public synchronized void waitForNextFlight() {
+        int hostessId;                                          //hostess id
+
+        hostess = (Hostess) Thread.currentThread();
+        hostessId = ((Hostess) Thread.currentThread()).getHostessId();
+        ((Hostess) Thread.currentThread()).setHostessState(HostessStates.WAIT_FOR_FLIGHT);
+        repos.setHostessState(hostessId, ((Hostess) Thread.currentThread()).getHostessState());
+
+        System.out.println("22222222");
+        if (!(getInF() + DestinationAirport.getPTAL() == SimulPar.N)) {
+            while (pilot.getPilotState() != PilotStates.READY_FOR_BOARDING)          // the hostess waits for a passenger to arrive
+            {
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    GenericIO.writelnString("Interruption: " + e.getMessage());
+                    System.exit(1);
+                }
+            }
         }
     }
 
     /**
-     *  Operation inform the pilot that the plane is ready to departure.
-     *
-     *  It is called by the hostess when she ended the check in of the passengers.
-     *
+     * Operation wait for all passengers to board the plane.
+     * <p>
+     * It is called by the pilot after he announced the hostess
+     * that the plane is ready for boarding .
      */
 
-    public synchronized void informPlaneReadyToTakeOff ()
-    {
+    public synchronized void waitForAllInBoarding() {
+        int pilotId;
+
+        pilotId = ((Pilot) Thread.currentThread()).getPilotId();
+        pilot.setPilotState(PilotStates.WAITING_FOR_BOARDING);
+        repos.setPilotState(pilotId, pilot.getPilotState());
+
+        while (!((Pilot) Thread.currentThread()).getReadyToTakeOff()) {
+            try {
+                System.out.println("I'M WAKING UP");
+                System.out.println(hostess.getHostessState());
+                wait();
+            } catch (InterruptedException e) {
+                GenericIO.writelnString("While waiting for passenger boarding: " + e.getMessage());
+                System.exit(1);
+            }
+        }
+        System.out.println("TO ASH AND DUST");
+    }
+
+    /**
+     * Operation inform the pilot that the plane is ready to departure.
+     * <p>
+     * It is called by the hostess when she ended the check in of the passengers.
+     */
+
+    public synchronized void informPlaneReadyToTakeOff() {
         int hostessId;
 
         hostessId = ((Hostess) Thread.currentThread()).getHostessId();
         this.hostess = (Hostess) Thread.currentThread();
         this.hostess.setHostessState(HostessStates.READY_TO_FLY);
-        repos.setHostessState (hostessId, this.hostess.getHostessState());
-
-        notifyAll ();
+        repos.setHostessState(hostessId, this.hostess.getHostessState());
+        pilot.setReadyToTakeOff(true);
+        notifyAll();
+        System.out.println("end of take off???");
     }
 
     /**
-     *  Operation boarding the plane
-     *
-     *  It is called by the passengers when they are allowed to enter the plane.
-     *
+     * Operation boarding the plane
+     * <p>
+     * It is called by the passengers when they are allowed to enter the plane.
      */
 
-    public synchronized void boardThePlane ()
-    {
+    public synchronized void boardThePlane() {
         int passengerId;                                            // passenger id
 
         this.inF += 1;
 
-        passengerId = ((Passenger) Thread.currentThread ()).getPassengerId ();
-        passengers[passengerId] = (Passenger) Thread.currentThread ();
-        passengers[passengerId].setPassengerState (PassengerStates.IN_FLIGHT);
-        repos.setPassengerState (passengerId, passengers[passengerId].getPassengerState ());
+        passengerId = ((Passenger) Thread.currentThread()).getPassengerId();
+        passengers[passengerId] = (Passenger) Thread.currentThread();
+        passengers[passengerId].setPassengerState(PassengerStates.IN_FLIGHT);
+        repos.setPassengerState(passengerId, passengers[passengerId].getPassengerState());
 
-        try
-        { passengersABoard.write (passengerId);                     // the passenger sits down on plane and waits
-        }
-        catch (MemException e)
-        { GenericIO.writelnString ("Insertion of passenger id in plane waiting FIFO failed: " + e.getMessage ());
-            System.exit (1);
-        }
-    }
-
-    /**
-     *  Operation wait for end of flight
-     *
-     *  It is called by the passengers when they are inside the plane and begin their waiting journey.
-     *
-     */
-
-    public synchronized void waitForEndOfFlight ()
-    {
-        while ((pilot.getPilotState () != PilotStates.DEBOARDING))
-        { try
-        { wait ();
-        }
-        catch (InterruptedException e)
-        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
-            System.exit (1);
-        }
+        try {
+            passengersABoard.write(passengerId);                     // the passenger sits down on plane and waits
+        } catch (MemException e) {
+            GenericIO.writelnString("Insertion of passenger id in plane waiting FIFO failed: " + e.getMessage());
+            System.exit(1);
         }
     }
 
     /**
-     *  Operation inform the pilot that the plane is ready to departure.
-     *
-     *  It is called by the hostess when she ended the check in of the passengers.
-     *
+     * Operation wait for end of flight
+     * <p>
+     * It is called by the passengers when they are inside the plane and begin their waiting journey.
      */
 
-    public synchronized void announceArrival ()
-    {
+    public synchronized void waitForEndOfFlight() {
+        while ((pilot.getPilotState() != PilotStates.DEBOARDING)) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                GenericIO.writelnString("Interruption: " + e.getMessage());
+                System.exit(1);
+            }
+        }
+    }
+
+    /**
+     * Operation inform the pilot that the plane is ready to departure.
+     * <p>
+     * It is called by the hostess when she ended the check in of the passengers.
+     */
+
+    public synchronized void announceArrival() {
         int pilotId;
 
-        pilotId = ((Pilot) Thread.currentThread ()).getPilotId();
+        pilotId = ((Pilot) Thread.currentThread()).getPilotId();
         this.pilot = (Pilot) Thread.currentThread();
         this.pilot.setPilotState(PilotStates.DEBOARDING);
-        repos.setPilotState (pilotId, this.pilot.getPilotState ());
+        repos.setPilotState(pilotId, this.pilot.getPilotState());
 
-        notifyAll ();
+        notifyAll();
 
-        while (this.inF != 0)
-        {
-            try
-            { wait ();
-            }
-            catch (InterruptedException e)
-            { GenericIO.writelnString ("Interruption: " + e.getMessage ());
-                System.exit (1);
+        while (this.inF != 0) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                GenericIO.writelnString("Interruption: " + e.getMessage());
+                System.exit(1);
             }
         }
     }
 
     /**
-     *  Operation boarding the plane
-     *
-     *  It is called by the passengers when they are allowed to enter the plane.
-     *
+     * Operation boarding the plane
+     * <p>
+     * It is called by the passengers when they are allowed to enter the plane.
      */
 
-    public synchronized void leaveThePlane ()
-    {
+    public synchronized void leaveThePlane() {
         int passengerId;                                            // passenger id
 
         this.inF -= 1;
 
-        passengerId = ((Passenger) Thread.currentThread ()).getPassengerId ();
-        passengers[passengerId].setPassengerState (PassengerStates.AT_DESTINATION);
-        repos.setPassengerState (passengerId, passengers[passengerId].getPassengerState ());
+        passengerId = ((Passenger) Thread.currentThread()).getPassengerId();
+        passengers[passengerId].setPassengerState(PassengerStates.AT_DESTINATION);
+        repos.setPassengerState(passengerId, passengers[passengerId].getPassengerState());
 
-        try
-        { passengersABoard.read ();                     // the passenger leaves the plane
-        }
-        catch (MemException e)
-        { GenericIO.writelnString ("Removal of passenger id in plane waiting FIFO failed: " + e.getMessage ());
-            System.exit (1);
+        try {
+            passengersABoard.read();                     // the passenger leaves the plane
+        } catch (MemException e) {
+            GenericIO.writelnString("Removal of passenger id in plane waiting FIFO failed: " + e.getMessage());
+            System.exit(1);
         }
 
         if (this.inF == 0) {

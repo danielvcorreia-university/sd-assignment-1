@@ -28,7 +28,7 @@ public class DestinationAirport {
      * Number of passengers that have arrived at the destination and have left the plane.
      */
 
-    private int PTAL;
+    private static int PTAL;
 
     /**
      * Reference to the general repository.
@@ -48,23 +48,20 @@ public class DestinationAirport {
     }
 
     /**
-     *   Get number of passengers in destination.
+     * Get number of passengers in destination.
      *
-     *     @return PTAL
+     * @return PTAL
      */
 
-    public int getPTAL ()
-    {
+    public static int getPTAL() {
         return PTAL;
     }
 
     /**
-     *   Get number of passengers in destination.
-     *
+     * Get number of passengers in destination.
      */
 
-    public void incPTAL ()
-    {
+    public void incPTAL() {
         PTAL += 1;
     }
 }

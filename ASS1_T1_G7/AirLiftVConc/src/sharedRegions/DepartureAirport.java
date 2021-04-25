@@ -21,235 +21,153 @@ import main.SimulPar;
  *    his documents and waits until she has checked his documents and calls the next passenger.
  */
 
-public class DepartureAirport
-{
+public class DepartureAirport {
     /**
-     *  Number of passengers in queue waiting for to show their documents to the hostess.
+     * Number of passengers in queue waiting for to show their documents to the hostess.
      */
 
-    private int inQ;
+    private static int inQ;
 
     /**
-     *  Reference to passenger threads.
+     * Reference to passenger threads.
      */
 
-    private final Passenger [] passengers;
+    private final Passenger[] passengers;
 
     /**
-     *  Reference to hostess thread.
+     * Reference to hostess thread.
      */
 
     private Hostess hostess;
 
     /**
-     *  Reference to pilot thread.
-     */
-
-    private Pilot pilot;
-
-    /**
-     *   Waiting queue at the transfer gate.
+     * Waiting queue at the transfer gate.
      */
 
     private MemFIFO<Integer> boardingQueue;
 
     /**
-     *   Reference to the general repository.
+     * Reference to the general repository.
      */
 
     private final GeneralRepos repos;
 
     /**
-     *  Departure airport instantiation.
+     * Departure airport instantiation.
      *
-     *    @param repos reference to the general repository
+     * @param repos reference to the general repository
      */
 
-    public DepartureAirport(GeneralRepos repos)
-    {
+    public DepartureAirport(GeneralRepos repos) {
         hostess = null;
-        passengers = new Passenger [SimulPar.N];
+        passengers = new Passenger[SimulPar.N];
         for (int i = 0; i < SimulPar.N; i++)
             passengers[i] = null;
-        try
-        { boardingQueue = new MemFIFO<> (new Integer [SimulPar.N]);
-        }
-        catch (MemException e)
-        { GenericIO.writelnString ("Instantiation of boarding FIFO failed: " + e.getMessage ());
+        try {
+            boardingQueue = new MemFIFO<>(new Integer[SimulPar.N]);
+        } catch (MemException e) {
+            GenericIO.writelnString("Instantiation of boarding FIFO failed: " + e.getMessage());
             boardingQueue = null;
-            System.exit (1);
+            System.exit(1);
         }
         this.repos = repos;
     }
 
     /**
-     *   Get number of passengers in queue.
+     * Get number of passengers in queue.
      *
-     *     @return inQ
+     * @return inQ
      */
 
-    public int getInQ ()
-    {
+    public static int getInQ() {
         return inQ;
     }
 
     /**
-     *  Operation prepare for pass boarding
-     *
-     *  It is called by the hostess while waiting for passengers to arrive at the airport.
-     *
+     * Operation prepare for pass boarding
+     * <p>
+     * It is called by the hostess while waiting for passengers to arrive at the airport.
      */
 
 
-    public synchronized void parkAtTransferGate  ()
-    {
-        int pilotId;                                          //hostess id
-
-        pilot = (Pilot) Thread.currentThread ();
-        pilotId = ((Pilot) Thread.currentThread ()).getPilotId ();
-        ((Pilot) Thread.currentThread ()).setPilotState (PilotStates.AT_TRANSFER_GATE);
-        repos.setPilotState (pilotId, ((Pilot) Thread.currentThread ()).getPilotState ());
-    }
-
-    /**
-     *  Operation wait for next flight
-     *
-     *  It is called by the hostess while waiting for plane to be ready for boarding.
-     *
-     */
-
-
-    public synchronized void waitForNextFlight  ()
-    {
+    public synchronized void prepareForPassBoarding() {
         int hostessId;                                          //hostess id
 
-        hostess = (Hostess) Thread.currentThread ();
-        hostessId = ((Hostess) Thread.currentThread ()).getHostessId ();
-        ((Hostess) Thread.currentThread ()).setHostessState (HostessStates.WAIT_FOR_FLIGHT);
-        repos.setHostessState (hostessId, ((Hostess) Thread.currentThread ()).getHostessState ());
-
-        while (pilot.getPilotState() != PilotStates.READY_FOR_BOARDING)          // the hostess waits for a passenger to arrive
-        { try
-        { wait ();
-        }
-        catch (InterruptedException e)
-        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
-            System.exit (1);
-        }
-        }
-    }
-
-    /**
-     *  Operation inform plane ready for boarding
-     *
-     *  It is called by the pilot to inform the hostess that the plane is ready for boarding.
-     *
-     */
-
-
-    public synchronized void informPlaneReadyForBoarding  ()
-    {
-        int pilotId;                                          //hostess id
-
-        pilotId = ((Pilot) Thread.currentThread ()).getPilotId ();
-        ((Pilot) Thread.currentThread ()).setPilotState (PilotStates.AT_TRANSFER_GATE);
-        repos.setPilotState (pilotId, ((Pilot) Thread.currentThread ()).getPilotState ());
-        notifyAll();
-    }
-
-    /**
-     *  Operation prepare for pass boarding
-     *
-     *  It is called by the hostess while waiting for passengers to arrive at the airport.
-     *
-     */
-
-
-    public synchronized void prepareForPassBoarding  ()
-    {
-        int hostessId;                                          //hostess id
-
-        hostessId = ((Hostess) Thread.currentThread ()).getHostessId ();
-        ((Hostess) Thread.currentThread ()).setHostessState (HostessStates.WAIT_FOR_PASSENGER);
-        repos.setHostessState (hostessId, ((Hostess) Thread.currentThread ()).getHostessState ());
+        hostess = (Hostess) Thread.currentThread();
+        hostessId = ((Hostess) Thread.currentThread()).getHostessId();
+        ((Hostess) Thread.currentThread()).setHostessState(HostessStates.WAIT_FOR_PASSENGER);
+        repos.setHostessState(hostessId, ((Hostess) Thread.currentThread()).getHostessState());
 
         while (inQ == 0)                             // the hostess waits for a passenger to arrive
-        { try
-        { wait ();
-        }
-        catch (InterruptedException e)
-        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
-            System.exit (1);
-        }
+        {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                GenericIO.writelnString("Interruption: " + e.getMessage());
+                System.exit(1);
+            }
         }
     }
 
     /**
-     *  Operation wait in queue.
-     *
-     *  It is called by a passenger while waiting for his turn to show his documents to the hostess.
-     *
+     * Operation wait in queue.
+     * <p>
+     * It is called by a passenger while waiting for his turn to show his documents to the hostess.
      */
 
 
-    public synchronized void waitInQueue()
-    {
+    public synchronized void waitInQueue() {
         int passengerId;                                      // passenger id
 
-        passengerId = ((Passenger) Thread.currentThread ()).getPassengerId ();
-        passengers[passengerId] = (Passenger) Thread.currentThread ();
-        passengers[passengerId].setPassengerState (PassengerStates.IN_QUEUE);
-        repos.setPassengerState (passengerId, passengers[passengerId].getPassengerState());
-        inQ ++;                                        // the customer requests a hair cut service,
+        passengerId = ((Passenger) Thread.currentThread()).getPassengerId();
+        passengers[passengerId] = (Passenger) Thread.currentThread();
+        passengers[passengerId].setPassengerState(PassengerStates.IN_QUEUE);
+        repos.setPassengerState(passengerId, passengers[passengerId].getPassengerState());
+        inQ++;                                        // the customer requests a hair cut service,
 
-        try
-        { boardingQueue.write (passengerId);                    // the customer sits down to wait for his turn
-        }
-        catch (MemException e)
-        { GenericIO.writelnString ("Insertion of customer id in waiting FIFO failed: " + e.getMessage ());
-            System.exit (1);
+        try {
+            boardingQueue.write(passengerId);                    // the customer sits down to wait for his turn
+        } catch (MemException e) {
+            GenericIO.writelnString("Insertion of customer id in waiting FIFO failed: " + e.getMessage());
+            System.exit(1);
         }
 
         notifyAll();
 
-        while (!(((Passenger) Thread.currentThread ()).getReadyToShowDocuments ()))
-        { try
-        { wait ();
-        }
-        catch (InterruptedException e)
-        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
-            System.exit (1);
-        }
+        while (!(((Passenger) Thread.currentThread()).getReadyToShowDocuments())) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                GenericIO.writelnString("Interruption: " + e.getMessage());
+                System.exit(1);
+            }
         }
     }
 
 
     /**
-     *  Operation check documents.
-     *
-     *  It is called by the hostess while waiting for the first costumer in queue to show his documents.
-     *
+     * Operation check documents.
+     * <p>
+     * It is called by the hostess while waiting for the first costumer in queue to show his documents.
      */
 
-    public synchronized void checkDocuments   ()
-    {
+    public synchronized void checkDocuments() {
         int hostessId,                                          //hostess id
-            passengerId;                                        //passenger id
+                passengerId;                                        //passenger id
 
-        hostessId = ((Hostess) Thread.currentThread ()).getHostessId ();
-        ((Hostess) Thread.currentThread ()).setHostessState (HostessStates.CHECK_PASSENGER);
-        repos.setHostessState (hostessId, ((Hostess) Thread.currentThread ()).getHostessState ());
+        hostessId = ((Hostess) Thread.currentThread()).getHostessId();
+        ((Hostess) Thread.currentThread()).setHostessState(HostessStates.CHECK_PASSENGER);
+        repos.setHostessState(hostessId, ((Hostess) Thread.currentThread()).getHostessState());
 
         inQ--;
-        try
-        { passengerId = boardingQueue.read ();                            // the hostess calls the customer
+        try {
+            passengerId = boardingQueue.read();                            // the hostess calls the customer
             if ((passengerId < 0) || (passengerId >= SimulPar.N))
-                throw new MemException ("illegal passenger id!");
-        }
-        catch (MemException e)
-        { GenericIO.writelnString ("Retrieval of passenger id from boarding FIFO failed: " + e.getMessage ());
+                throw new MemException("illegal passenger id!");
+        } catch (MemException e) {
+            GenericIO.writelnString("Retrieval of passenger id from boarding FIFO failed: " + e.getMessage());
             passengerId = -1;
-            System.exit (1);
+            System.exit(1);
         }
 
         passengers[passengerId].setReadyToShowDocuments(true);
@@ -257,67 +175,64 @@ public class DepartureAirport
         notifyAll();
 
         while (!hostess.getReadyToCheckDocuments())             // the hostess waits for the passenger to give his documents
-        { try
-        { wait ();
-        }
-        catch (InterruptedException e)
-        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
-            System.exit (1);
-        }
+        {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                GenericIO.writelnString("Interruption: " + e.getMessage());
+                System.exit(1);
+            }
         }
 
         hostess.setReadyToCheckDocuments(false);
     }
 
     /**
-     *  Operation show documents.
-     *
-     *  It is called by a passenger if the hostess has called him to check his documents.
-     *
+     * Operation show documents.
+     * <p>
+     * It is called by a passenger if the hostess has called him to check his documents.
      */
 
-    public synchronized void showDocuments ()
-    {
+    public synchronized void showDocuments() {
         hostess.setReadyToCheckDocuments(true);
 
         notifyAll();
-        while (hostess.getHostessState () != HostessStates.WAIT_FOR_PASSENGER)   // the passenger waits until he is clear to proceed
-        { try
-        { wait ();
-        }
-        catch (InterruptedException e)
-        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
-            System.exit (1);
-        }
+        while (hostess.getHostessState() != HostessStates.WAIT_FOR_PASSENGER)   // the passenger waits until he is clear to proceed
+        {
+            try {
+                wait();
+                System.out.println("MY TIME IS NOW");
+            } catch (InterruptedException e) {
+                GenericIO.writelnString("Interruption: " + e.getMessage());
+                System.exit(1);
+            }
         }
     }
 
 
     /**
-     *  Operation wait for next passenger.
-     *
-     *  It is called by the hostess while waiting for the next passenger in queue.
-     *
+     * Operation wait for next passenger.
+     * <p>
+     * It is called by the hostess while waiting for the next passenger in queue.
      */
 
-    public synchronized void waitForNextPassenger()
-    {
+    public synchronized void waitForNextPassenger() {
         int hostessId;                                          //hostess id
 
-        hostessId = ((Hostess) Thread.currentThread ()).getHostessId ();
-        ((Hostess) Thread.currentThread ()).setHostessState (HostessStates.WAIT_FOR_PASSENGER);
-        repos.setHostessState (hostessId, ((Hostess) Thread.currentThread ()).getHostessState ());
+        hostessId = ((Hostess) Thread.currentThread()).getHostessId();
+        ((Hostess) Thread.currentThread()).setHostessState(HostessStates.WAIT_FOR_PASSENGER);
+        repos.setHostessState(hostessId, ((Hostess) Thread.currentThread()).getHostessState());
 
         notifyAll();
 
         while (inQ == 0)                             // the hostess waits for a passenger to arrive
-        { try
-        { wait ();
-        }
-        catch (InterruptedException e)
-        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
-            System.exit (1);
-        }
+        {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                GenericIO.writelnString("Interruption: " + e.getMessage());
+                System.exit(1);
+            }
         }
     }
 }

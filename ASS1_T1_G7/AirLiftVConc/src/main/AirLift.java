@@ -19,14 +19,13 @@ import sharedRegions.Plane;
 
 public class AirLift {
     /**
-     *    Main method.
+     * Main method.
      *
-     *    @param args runtime arguments
+     * @param args runtime arguments
      */
 
-    public static void main (String [] args)
-    {
-        Passenger[] passenger = new Passenger [SimulPar.N];     // array of passenger threads
+    public static void main(String[] args) {
+        Passenger[] passenger = new Passenger[SimulPar.N];     // array of passenger threads
         Pilot pilot;                                            // pilot thread
         Hostess hostess;                                        // reference to the barber shop
         DepartureAirport depAirport;                            // reference to the departure airport repository
@@ -39,80 +38,76 @@ public class AirLift {
 
         /* problem initialization */
 
-        GenericIO.writelnString ("\n" + "      Problem of the Air Lift\n");
-        do
-        { GenericIO.writeString ("Logging file name? ");
-            fileName = GenericIO.readlnString ();
-            if (FileOp.exists (".", fileName))
-            { do
-            { GenericIO.writeString ("There is already a file with this name. Delete it (y - yes; n - no)? ");
-                opt = GenericIO.readlnChar ();
-            } while ((opt != 'y') && (opt != 'n'));
+        GenericIO.writelnString("\n" + "      Problem of the Air Lift\n");
+        do {
+            GenericIO.writeString("Logging file name? ");
+            fileName = GenericIO.readlnString();
+            if (FileOp.exists(".", fileName)) {
+                do {
+                    GenericIO.writeString("There is already a file with this name. Delete it (y - yes; n - no)? ");
+                    opt = GenericIO.readlnChar();
+                } while ((opt != 'y') && (opt != 'n'));
                 if (opt == 'y')
                     success = true;
                 else success = false;
-            }
-            else success = true;
+            } else success = true;
         } while (!success);
 
         /* TO CHANGE */
-        repos = new GeneralRepos (fileName);
+        repos = new GeneralRepos(fileName);
         desAirport = new DestinationAirport(repos);
         depAirport = new DepartureAirport(repos);
-        plane = new Plane (repos);
-        pilot = new Pilot ("Pilot_" + (1), 0, depAirport, plane, desAirport);
-        hostess = new Hostess ("Hostess_" + (1), 0, depAirport, plane, desAirport);
+        plane = new Plane(repos);
+        pilot = new Pilot("Pilot_" + (1), 0, depAirport, plane, desAirport);
+        hostess = new Hostess("Hostess_" + (1), 0, depAirport, plane, desAirport);
         for (int i = 0; i < SimulPar.N; i++)
-            passenger[i] = new Passenger ("Passenger_" + (i+1), i, depAirport, plane, desAirport);
+            passenger[i] = new Passenger("Passenger_" + (i + 1), i, depAirport, plane, desAirport);
 
         /* start of the simulation */
 
         pilot.start();
         hostess.start();
         for (int i = 0; i < SimulPar.N; i++)
-            passenger[i].start ();
+            passenger[i].start();
 
         /* waiting for the end of the simulation */
 
-        GenericIO.writelnString ();
-        for (int i = 0; i < SimulPar.N; i++)
-        { try
-        { passenger[i].join ();
-        }
-        catch (InterruptedException e)
-        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
-            System.exit (1);
-        }
-            GenericIO.writelnString ("The passenger " + (i+1) + " has terminated.");
-        }
-        GenericIO.writelnString ();
-        while (pilot.isAlive ())
-        { pilot.interrupt ();
-            Thread.yield ();
-        }
-            try
-            { pilot.join ();
+        GenericIO.writelnString();
+        for (int i = 0; i < SimulPar.N; i++) {
+            try {
+                passenger[i].join();
+            } catch (InterruptedException e) {
+                GenericIO.writelnString("Interruption: " + e.getMessage());
+                System.exit(1);
             }
-            catch (InterruptedException e)
-            { GenericIO.writelnString ("Interruption: " + e.getMessage ());
-                System.exit (1);
-            }
-            GenericIO.writelnString ("The pilot " + (1) + " has terminated.");
+            GenericIO.writelnString("The passenger " + (i + 1) + " has terminated.");
+        }
+        GenericIO.writelnString();
+        while (pilot.isAlive()) {
+            pilot.interrupt();
+            Thread.yield();
+        }
+        try {
+            pilot.join();
+        } catch (InterruptedException e) {
+            GenericIO.writelnString("Interruption: " + e.getMessage());
+            System.exit(1);
+        }
+        GenericIO.writelnString("The pilot " + (1) + " has terminated.");
 
-        GenericIO.writelnString ();
-        while (hostess.isAlive ())
-        { hostess.interrupt ();
-            Thread.yield ();
+        GenericIO.writelnString();
+        while (hostess.isAlive()) {
+            hostess.interrupt();
+            Thread.yield();
         }
-        try
-        { hostess.join ();
+        try {
+            hostess.join();
+        } catch (InterruptedException e) {
+            GenericIO.writelnString("Interruption: " + e.getMessage());
+            System.exit(1);
         }
-        catch (InterruptedException e)
-        { GenericIO.writelnString ("Interruption: " + e.getMessage ());
-            System.exit (1);
-        }
-        GenericIO.writelnString ("The hostess " + (1) + " has terminated.");
+        GenericIO.writelnString("The hostess " + (1) + " has terminated.");
 
-        GenericIO.writelnString ();
-        }
+        GenericIO.writelnString();
+    }
 }
