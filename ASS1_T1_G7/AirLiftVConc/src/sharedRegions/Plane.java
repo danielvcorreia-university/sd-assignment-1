@@ -130,7 +130,6 @@ public class Plane {
      * It is called by the hostess while waiting for plane to be ready for boarding.
      */
 
-    /* to change */
     public synchronized void waitForNextFlight() {
         int hostessId;                                          //hostess id
 

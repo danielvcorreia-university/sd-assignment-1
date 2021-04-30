@@ -4,6 +4,8 @@ import main.*;
 import entities.*;
 import genclass.GenericIO;
 import genclass.TextFile;
+
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -58,12 +60,14 @@ public class GeneralRepos {
     private int ndoVoo;
     private String[] informacaoDosVoos;
     private int passageiroAtual;
+    private int [] passengerPerFlight;
 
     public GeneralRepos (String logFileName)
     {
         if ((logFileName == null) || Objects.equals (logFileName, ""))
             this.logFileName = "logger";
         else this.logFileName = logFileName;
+        passengerPerFlight = new int  [(SimulPar.N / SimulPar.MIN)+1];
         passengerState = new int [SimulPar.N+1];
         passAnteriorState = new int [SimulPar.N+1];
         for (int i = 0; i < SimulPar.N; i++) {
@@ -149,15 +153,14 @@ public class GeneralRepos {
             GenericIO.writelnString("The operation of creating the file " + logFileName + " failed!");
             System.exit(1);
         }
-        log.writelnString("                                                                     Problem of AirLift ");
+        log.writelnString("                                          Airlift - Description of the internal state");
         log.writelnString("");
         log.writelnString(
-                "  PT    HT    P00   P01   P02   P03   P04   P05   P06   P07   P08   P09   P10   P11   P12   P13   P14   P15   P16   P17   P18   P19   P20  InQ   InF  PTAL");
+                " PT   HT   P00  P01  P02  P03  P04  P05  P06  P07  P08  P09  P10  P11  P12  P13  P14  P15  P16  P17  P18  P19  P20 InQ InF PTAL");
         if (!log.close()) {
             GenericIO.writelnString("The operation of closing the file " + logFileName + " failed!");
             System.exit(1);
         }
-        reportStatus();
     }
 
     /**
@@ -178,31 +181,31 @@ public class GeneralRepos {
 
         switch (pilotState) {
             case PilotStates.AT_TRANSFER_GATE:
-                lineStatus += " ATRG ";
+                lineStatus += "ATRG ";
                 pilotAnteriorState = PilotStates.AT_TRANSFER_GATE;
                 break;
             case PilotStates.READY_FOR_BOARDING:
-                lineStatus += " RDFB ";
-                log.writelnString("\nFlight " + numeroDeVoo + " : boarding started.");
+                lineStatus += "RDFB ";
+                log.writelnString("\nFlight " + numeroDeVoo + ": boarding started.");
                 pilotAnteriorState = PilotStates.READY_FOR_BOARDING;
                 break;
             case PilotStates.WAITING_FOR_BOARDING:
-                lineStatus += " WTFB ";
+                lineStatus += "WTFB ";
                 pilotAnteriorState = PilotStates.WAITING_FOR_BOARDING;
                 break;
             case PilotStates.FLYING_FORWARD:
-                lineStatus += " FLFW ";
+                lineStatus += "FLFW ";
                 pilotAnteriorState = PilotStates.FLYING_FORWARD;
                 break;
             case PilotStates.DEBOARDING:
-                lineStatus += " DRPP ";
-                if (pilotAnteriorState == PilotStates.FLYING_FORWARD) log.writelnString("\nFlight " + numeroDeVoo + " : arrived.");
+                lineStatus += "DRPP ";
+                if (pilotAnteriorState == PilotStates.FLYING_FORWARD) log.writelnString("\nFlight " + numeroDeVoo + ": arrived.");
                 pilotAnteriorState = PilotStates.DEBOARDING;
                 break;
             case PilotStates.FLYING_BACK:
-                lineStatus += " FLBK ";
+                lineStatus += "FLBK ";
                 if (pilotAnteriorState == PilotStates.DEBOARDING) {
-                    log.writelnString("\nFlight " + numeroDeVoo + " : returning.");
+                    log.writelnString("\nFlight " + numeroDeVoo + ": returning.");
                     numeroDeVoo++;
                 }
                 pilotAnteriorState = PilotStates.FLYING_BACK;
@@ -211,15 +214,15 @@ public class GeneralRepos {
 
         switch (hostessState) {
             case HostessStates.WAIT_FOR_FLIGHT:
-                lineStatus += " WTFL ";
+                lineStatus += "WTFL ";
                 hostessAnteriorState = HostessStates.WAIT_FOR_FLIGHT;
                 break;
             case HostessStates.WAIT_FOR_PASSENGER:
-                lineStatus += " WTPS ";
+                lineStatus += "WTPS ";
                 hostessAnteriorState = HostessStates.WAIT_FOR_PASSENGER;
                 break;
             case HostessStates.CHECK_PASSENGER:
-                lineStatus += " CKPS ";
+                lineStatus += "CKPS ";
                 if (hostessAnteriorState == HostessStates.WAIT_FOR_PASSENGER) {
                     //InQ--;
 
@@ -227,9 +230,10 @@ public class GeneralRepos {
                 hostessAnteriorState = HostessStates.CHECK_PASSENGER;
                 break;
             case HostessStates.READY_TO_FLY:
-                lineStatus += " RDTF ";
+                lineStatus += "RDTF ";
                 if (hostessAnteriorState == HostessStates.WAIT_FOR_PASSENGER) {
-                    log.writelnString("\nFlight " + numeroDeVoo + " : departed with " + InF + " passengers.");
+                    log.writelnString("\nFlight " + numeroDeVoo + ": departed with " + InF + " passengers.");
+                    passengerPerFlight[numeroDeVoo-1] = InF;
                 }
                 hostessAnteriorState = HostessStates.READY_TO_FLY;
                 break;
@@ -238,27 +242,27 @@ public class GeneralRepos {
         for (int i = 0; i < SimulPar.N; i++)
             switch (passengerState[i]) {
                 case PassengerStates.GOING_TO_AIRPORT:
-                    lineStatus += " GTAP ";
+                    lineStatus += "GTAP ";
                     passAnteriorState[i] = PassengerStates.GOING_TO_AIRPORT;
                     break;
                 case PassengerStates.IN_QUEUE:
-                    lineStatus += " INQE ";
+                    lineStatus += "INQE ";
                     if (passAnteriorState[i] == PassengerStates.GOING_TO_AIRPORT) {
                         InQ++;
                     }
                     passAnteriorState[i] = PassengerStates.IN_QUEUE;
                     break;
                 case PassengerStates.IN_FLIGHT:
-                    lineStatus += " INFL ";
+                    lineStatus += "INFL ";
                     if (passAnteriorState[i] == PassengerStates.IN_QUEUE) {
                         InQ--;
                         InF++;
-                        log.writelnString("\nFlight " + numeroDeVoo + " : passenger " + passageiroAtual + " checked.");
+                        log.writelnString("\nFlight " + numeroDeVoo + ": passenger " + passageiroAtual + " checked.");
                     }
                     passAnteriorState[i] = PassengerStates.IN_FLIGHT;
                     break;
                 case PassengerStates.AT_DESTINATION:
-                    lineStatus += " ATDS ";
+                    lineStatus += "ATDS ";
                     if (passAnteriorState[i] == PassengerStates.IN_FLIGHT) {
                         InF--;
                         PTAL++;
@@ -267,7 +271,15 @@ public class GeneralRepos {
                     break;
             }
 
-        lineStatus += "  " + InQ + "     " + InF + "     " + PTAL;
+        lineStatus += "  " + InQ + "   " + InF + "   " + PTAL;
+        if (pilotState == PilotStates.AT_TRANSFER_GATE && hostessState == HostessStates.WAIT_FOR_FLIGHT && PTAL == 21) {
+            lineStatus += "\n\nAirlift sum up:";
+            for (int i = 0; i < passengerPerFlight.length; i++) {
+                if (passengerPerFlight[i] != 0)
+                    { lineStatus += "\nFlight " + (i+1) + " transported " + passengerPerFlight[i] + " passengers"; }
+            }
+            lineStatus += ".";
+        }
         log.writelnString(lineStatus);
         if (!log.close()) {
             GenericIO.writelnString("The operation of closing the file " + logFileName + " failed!");
