@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="genclass">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../../../genclass.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../../genclass/genclass.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

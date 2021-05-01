@@ -270,16 +270,51 @@ public class GeneralRepos {
                     passAnteriorState[i] = PassengerStates.AT_DESTINATION;
                     break;
             }
+        if (InQ > 9)
+            lineStatus += " " + InQ;
+        else
+            lineStatus += "  " + InQ;
 
-        lineStatus += "  " + InQ + "   " + InF + "   " + PTAL;
-        if (pilotState == PilotStates.AT_TRANSFER_GATE && hostessState == HostessStates.WAIT_FOR_FLIGHT && PTAL == 21) {
-            lineStatus += "\n\nAirlift sum up:";
-            for (int i = 0; i < passengerPerFlight.length; i++) {
-                if (passengerPerFlight[i] != 0)
-                    { lineStatus += "\nFlight " + (i+1) + " transported " + passengerPerFlight[i] + " passengers"; }
-            }
-            lineStatus += ".";
+        if (InF > 9)
+            lineStatus += "  " + InF;
+        else
+            lineStatus += "   " + InF;
+
+        if (PTAL > 9)
+            lineStatus += "  " + PTAL;
+        else
+            lineStatus += "   " + PTAL;
+
+        log.writelnString(lineStatus);
+        if (!log.close()) {
+            GenericIO.writelnString("The operation of closing the file " + logFileName + " failed!");
+            System.exit(1);
         }
+    }
+
+    /**
+     * Report the final report of the General Repository when the pilot ended all the flights
+     * <p>
+     * It prints all the flights performed and the amount of passengers that were in each one
+     */
+
+    public synchronized void reportFinalInfo() {
+        TextFile log = new TextFile(); // instantiation of a text file handler
+
+        String lineStatus = ""; // state line to be printed
+
+        if (!log.openForAppending(".", logFileName)) {
+            GenericIO.writelnString("The operation of opening for appending the file " + logFileName + " failed!");
+            System.exit(1);
+        }
+
+        lineStatus += "\nAirlift sum up:";
+        for (int i = 0; i < passengerPerFlight.length; i++) {
+            if (passengerPerFlight[i] != 0)
+            { lineStatus += "\nFlight " + (i+1) + " transported " + passengerPerFlight[i] + " passengers"; }
+        }
+        lineStatus += ".";
+
         log.writelnString(lineStatus);
         if (!log.close()) {
             GenericIO.writelnString("The operation of closing the file " + logFileName + " failed!");

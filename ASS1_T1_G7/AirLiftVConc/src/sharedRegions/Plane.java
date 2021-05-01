@@ -103,6 +103,8 @@ public class Plane {
         pilot = (Pilot) Thread.currentThread();
         ((Pilot) Thread.currentThread()).setPilotState(PilotStates.AT_TRANSFER_GATE);
         repos.setPilotState(((Pilot) Thread.currentThread()).getPilotState());
+        if (DestinationAirport.getPTAL() == SimulPar.N)
+            repos.reportFinalInfo();
     }
 
     /**
