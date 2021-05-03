@@ -52,7 +52,6 @@ public class AirLift {
                 else success = false;
             } else success = true;
         } while (!success);
-
         /* TO CHANGE */
         repos = new GeneralRepos(fileName);
         desAirport = new DestinationAirport(repos);

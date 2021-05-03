@@ -103,7 +103,7 @@ public class Passenger extends Thread {
     /**
      * Get ready to show documents.
      *
-     * @return ready to show documents
+     * @return True if ready to show documents
      */
 
     public boolean getReadyToShowDocuments() {

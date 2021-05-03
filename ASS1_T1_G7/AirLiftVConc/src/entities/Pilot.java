@@ -95,7 +95,7 @@ public class Pilot extends Thread {
     /**
      * Get ready to take off
      *
-     * @return ready to take off
+     * @return True if ready to take off
      */
 
     public boolean getReadyToTakeOff() {
@@ -138,7 +138,7 @@ public class Pilot extends Thread {
             plane.announceArrival();
             flyToDeparturePoint();
             plane.parkAtTransferGate();
-            if (Plane.getInF() + DestinationAirport.getPTAL() == SimulPar.N) {
+            if (DestinationAirport.getPTAL() == SimulPar.N) {
                 endOp = true;
             }
         }

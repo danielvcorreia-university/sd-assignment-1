@@ -136,7 +136,7 @@ public class Hostess extends Thread {
     /**
      * Get ready to check documents of the next passenger
      *
-     * @return ready for next passenger
+     * @return True if ready for next passenger
      */
 
     public boolean getReadyForNextPassenger() {

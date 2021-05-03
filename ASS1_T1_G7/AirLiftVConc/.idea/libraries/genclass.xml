@@ -2,6 +2,7 @@
   <library name="genclass">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/../../../genclass/genclass.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../../genclass.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
