@@ -186,7 +186,7 @@ public class GeneralRepos {
                 break;
             case PilotStates.READY_FOR_BOARDING:
                 lineStatus += "RDFB ";
-                log.writelnString("\nFlight " + numeroDeVoo + ": boarding started.");
+                if (pilotAnteriorState == PilotStates.AT_TRANSFER_GATE) log.writelnString("\nFlight " + numeroDeVoo + ": boarding started.");
                 pilotAnteriorState = PilotStates.READY_FOR_BOARDING;
                 break;
             case PilotStates.WAITING_FOR_BOARDING:
