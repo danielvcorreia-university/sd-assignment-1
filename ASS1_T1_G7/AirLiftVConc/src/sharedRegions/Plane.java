@@ -92,19 +92,27 @@ public class Plane {
     }
 
     /**
+     * Operation to report the final report
+     * <p>
+     * It is called by the pilot after he parks the plane at the transfer gate and there are no more passengers to transport
+     */
+
+    public synchronized void reportFinalReport() {
+        repos.reportFinalInfo();
+    }
+
+    /**
      * Operation prepare for pass boarding
      * <p>
      * It is called by the hostess while waiting for passengers to arrive at the airport.
      */
-
 
     public synchronized void parkAtTransferGate() {
 
         pilot = (Pilot) Thread.currentThread();
         ((Pilot) Thread.currentThread()).setPilotState(PilotStates.AT_TRANSFER_GATE);
         repos.setPilotState(((Pilot) Thread.currentThread()).getPilotState());
-        if (DestinationAirport.getPTAL() == SimulPar.N)
-            repos.reportFinalInfo();
+        //if (DestinationAirport.getPTAL() == SimulPar.N) { repos.reportFinalInfo(); }
     }
 
     /**
@@ -132,6 +140,8 @@ public class Plane {
      * It is called by the hostess while waiting for plane to be ready for boarding.
      */
 
+    /* (DONE?) CHANGE - getInF() + DestinationAirport.getPTAL() - TO DO - hostess.getCheckedPassengers() */
+    /*  || !(pilot.getPilotState() == PilotStates.WAITING_FOR_BOARDING) */
     public synchronized void waitForNextFlight() {
         int hostessId;                                          //hostess id
 
@@ -140,7 +150,7 @@ public class Plane {
         ((Hostess) Thread.currentThread()).setHostessState(HostessStates.WAIT_FOR_FLIGHT);
         repos.setHostessState(hostessId, ((Hostess) Thread.currentThread()).getHostessState());
 
-        if (!(getInF() + DestinationAirport.getPTAL() == SimulPar.N)) {
+        if (!(hostess.getCheckedPassengers() == SimulPar.N)) {
 
             // while (!(((Hostess) Thread.currentThread()).getReadyForNextFlight()))          // the hostess waits for pilot signal
             while(!nextFlight)
@@ -202,7 +212,6 @@ public class Plane {
      * It is called by the passengers when they are inside the plane and begin their waiting journey.
      */
 
-    /* to change */
     public synchronized void waitForEndOfFlight() {
         int passengerId;                                            // passenger id
 
@@ -225,7 +234,6 @@ public class Plane {
      * It is called by the hostess when she ended the check in of the passengers.
      */
 
-    /* TO CHANGE */
     public synchronized void announceArrival() {
         ((Pilot) Thread.currentThread()).setPilotState(PilotStates.DEBOARDING);
         repos.setPilotState(((Pilot) Thread.currentThread()).getPilotState());
@@ -246,9 +254,9 @@ public class Plane {
     }
 
     /**
-     * Operation boarding the plane
+     * Operation leave the plane
      * <p>
-     * It is called by the passengers when they are allowed to enter the plane.
+     * It is called by the passengers when they leave the plane.
      */
 
     public synchronized void leaveThePlane() {
@@ -260,8 +268,6 @@ public class Plane {
         passengers[passengerId].setPassengerState(PassengerStates.AT_DESTINATION);
         repos.setPassengerState(passengerId, passengers[passengerId].getPassengerState());
 
-        if (inF == 0) {
-            notifyAll();
-        }
+        if (inF == 0) { notifyAll(); }
     }
 }

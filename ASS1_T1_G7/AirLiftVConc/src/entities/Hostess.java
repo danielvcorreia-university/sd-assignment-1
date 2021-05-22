@@ -33,6 +33,12 @@ public class Hostess extends Thread {
     private int hostessCount;
 
     /**
+     * Count number of passengers checked by hostess.
+     */
+
+    private int checkedPassengers;
+
+    /**
      * True if the hostess can check next passenger documents.
      */
 
@@ -76,6 +82,8 @@ public class Hostess extends Thread {
         super(name);
         this.readyToCheckDocuments = false;
         this.readyForNextPassenger = false;
+        this.hostessCount = 0;
+        this.checkedPassengers = 0;
         this.hostessId = hostessId;
         hostessState = HostessStates.WAIT_FOR_FLIGHT;
         this.depAirport = depAirport;
@@ -121,6 +129,24 @@ public class Hostess extends Thread {
 
     public int getHostessCount() {
         return hostessCount;
+    }
+
+    /**
+     * Set number of passengers which hostess checked documents.
+     *
+     * @param nCheckedPassengers number of passengers checked
+     */
+
+    public void setCheckedPassengers(int nCheckedPassengers) { checkedPassengers = nCheckedPassengers; }
+
+    /**
+     * Get number of passengers which hostess checked documents.
+     *
+     * @return hostess count
+     */
+
+    public int getCheckedPassengers() {
+        return checkedPassengers;
     }
 
     /**
@@ -193,7 +219,6 @@ public class Hostess extends Thread {
         plane.waitForNextFlight();
         while (!endOp) {
             depAirport.prepareForPassBoarding();
-
 
             while (Plane.getInF() < SimulPar.MIN) {
                 depAirport.checkDocuments();

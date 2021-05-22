@@ -1,6 +1,7 @@
 package entities;
 
 import genclass.GenericIO;
+import main.SimulPar;
 import sharedRegions.DepartureAirport;
 import sharedRegions.DestinationAirport;
 import sharedRegions.Plane;
@@ -136,10 +137,13 @@ public class Passenger extends Thread {
 
     @Override
     public void run() {
+        boolean reportFinalInfo = false;
+
         this.travelToAirport();                // Takes random time
         depAirport.waitInQueue();
         depAirport.showDocuments();
         depAirport.boardThePlane();
+        plane.setInF(Plane.getInF()+1);
         plane.waitForEndOfFlight();
         plane.leaveThePlane();             //see you later aligator
         destAirport.incPTAL();

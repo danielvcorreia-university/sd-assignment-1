@@ -139,6 +139,7 @@ public class Pilot extends Thread {
             flyToDeparturePoint();
             plane.parkAtTransferGate();
             if (DestinationAirport.getPTAL() == SimulPar.N) {
+                plane.reportFinalReport();
                 endOp = true;
             }
         }

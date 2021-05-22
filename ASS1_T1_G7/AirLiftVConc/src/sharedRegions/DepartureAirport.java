@@ -79,16 +79,13 @@ public class DepartureAirport {
      * @return inQ
      */
 
-    public static int getInQ() {
-        return inQ;
-    }
+    public static int getInQ() { return inQ; }
 
     /**
      * Operation prepare for pass boarding
      * <p>
      * It is called by the hostess while waiting for passengers to arrive at the airport.
      */
-
 
     public synchronized void prepareForPassBoarding() {
         int hostessId;                                          //hostess id
@@ -114,7 +111,6 @@ public class DepartureAirport {
      * <p>
      * It is called by a passenger while waiting for his turn to show his documents to the hostess.
      */
-
 
     public synchronized void waitInQueue() {
         int passengerId;                                      // passenger id
@@ -162,6 +158,7 @@ public class DepartureAirport {
 
         inQ--;
         hostess.setHostessCount(hostess.getHostessCount()+1);
+        hostess.setCheckedPassengers(hostess.getCheckedPassengers() + 1);
         try {
             passengerId = boardingQueue.read();                            // the hostess calls the customer
             if ((passengerId < 0) || (passengerId >= SimulPar.N))
@@ -210,13 +207,13 @@ public class DepartureAirport {
         }
     }
 
-
     /**
      * Operation wait for next passenger.
      * <p>
      * It is called by the hostess while waiting for the next passenger in queue.
      */
 
+    /* CHANGE - Plane.getInF() + DestinationAirport.getPTAL()) - TO DO - hostess.getCheckedPassengers() */
     public synchronized void waitForNextPassenger() {
         int hostessId;                                          //hostess id
 
@@ -247,7 +244,6 @@ public class DepartureAirport {
     public synchronized void boardThePlane() {
         int passengerId;                                            // passenger id
 
-        Plane.setInF(Plane.getInF()+1);
         hostess.setReadyForNextPassenger(true);
         passengerId = ((Passenger) Thread.currentThread()).getPassengerId();
         passengers[passengerId].setPassengerState(PassengerStates.IN_FLIGHT);
