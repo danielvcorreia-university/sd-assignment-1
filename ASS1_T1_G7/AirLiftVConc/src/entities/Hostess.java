@@ -242,7 +242,7 @@ public class Hostess extends Thread {
     @Override
     public void run() {
         boolean endOp = false;                                       // flag signaling end of operations
-        plane.waitForNextFlight();
+        plane.waitForNextFlight(true);
         while (!endOp) {
             depAirport.prepareForPassBoarding();
 
@@ -262,7 +262,7 @@ public class Hostess extends Thread {
             }
             plane.informPlaneReadyToTakeOff();
 
-            plane.waitForNextFlight();
+            plane.waitForNextFlight(false);
         }
     }
 }

@@ -140,14 +140,14 @@ public class Plane {
      * It is called by the hostess while waiting for plane to be ready for boarding.
      */
 
-    public synchronized void waitForNextFlight() {
+    public synchronized void waitForNextFlight(boolean first) {
         int hostessId;                                          //hostess id
 
         hostess = (Hostess) Thread.currentThread();
         hostessId = ((Hostess) Thread.currentThread()).getHostessId();
         ((Hostess) Thread.currentThread()).setHostessState(HostessStates.WAIT_FOR_FLIGHT);
-        repos.setHostessState(hostessId, ((Hostess) Thread.currentThread()).getHostessState());
-
+        if(!first)
+            repos.setHostessState(hostessId, ((Hostess) Thread.currentThread()).getHostessState());
 
         hostess.setCheckedPassengers(hostess.getCheckedPassengers() + inF);
 

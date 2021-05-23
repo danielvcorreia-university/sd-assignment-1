@@ -39,7 +39,7 @@ public class AirLift {
         /* problem initialization */
 
         GenericIO.writelnString("\n" + "      Problem of the Air Lift\n");
-        /*do {
+        do {
             GenericIO.writeString("Logging file name? ");
             fileName = GenericIO.readlnString();
             if (FileOp.exists(".", fileName)) {
@@ -51,8 +51,8 @@ public class AirLift {
                     success = true;
                 else success = false;
             } else success = true;
-        } while (!success);*/
-        fileName = "test";
+        } while (!success);
+
         repos = new GeneralRepos(fileName);
         desAirport = new DestinationAirport(repos);
         depAirport = new DepartureAirport(repos);
