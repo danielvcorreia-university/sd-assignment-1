@@ -26,7 +26,13 @@ public class DepartureAirport {
      * Number of passengers in queue waiting for to show their documents to the hostess.
      */
 
-    private static int inQ;
+    private int inQ;
+
+    /**
+     * Number of passengers waiting in the plane.
+     */
+
+    private int inP;
 
     /**
      * Reference to passenger threads.
@@ -79,7 +85,17 @@ public class DepartureAirport {
      * @return inQ
      */
 
-    public static int getInQ() { return inQ; }
+    public int getInQ() { return inQ; }
+
+    /**
+     * Operation queue empty
+     * <p>
+     * It is called to check if the passenger queue is currently empty
+     */
+
+    public boolean queueEmpty() {
+        return inQ == 0;
+    }
 
     /**
      * Operation prepare for pass boarding
@@ -95,6 +111,7 @@ public class DepartureAirport {
         ((Hostess) Thread.currentThread()).setHostessState(HostessStates.WAIT_FOR_PASSENGER);
         repos.setHostessState(hostessId, ((Hostess) Thread.currentThread()).getHostessState());
         hostess.setHostessCount(0);
+        inP = 0;
         while (inQ == 0)                             // the hostess waits for a passenger to arrive
         {
             try {
@@ -119,7 +136,7 @@ public class DepartureAirport {
         passengers[passengerId] = (Passenger) Thread.currentThread();
         passengers[passengerId].setPassengerState(PassengerStates.IN_QUEUE);
         repos.setPassengerState(passengerId, passengers[passengerId].getPassengerState());
-        inQ++;                                        // the customer requests a hair cut service,
+        inQ++;                                        // the passenger arrives at the airport,
 
         try {
             boardingQueue.write(passengerId);                    // the customer sits down to wait for his turn
@@ -157,8 +174,8 @@ public class DepartureAirport {
         repos.setHostessState(hostessId, ((Hostess) Thread.currentThread()).getHostessState());
 
         inQ--;
-        hostess.setHostessCount(hostess.getHostessCount()+1);
-        hostess.setCheckedPassengers(hostess.getCheckedPassengers() + 1);
+        hostess.setPassengerInQueue(!queueEmpty());
+
         try {
             passengerId = boardingQueue.read();                            // the hostess calls the customer
             if ((passengerId < 0) || (passengerId >= SimulPar.N))
@@ -213,17 +230,18 @@ public class DepartureAirport {
      * It is called by the hostess while waiting for the next passenger in queue.
      */
 
-    /* CHANGE - Plane.getInF() + DestinationAirport.getPTAL()) - TO DO - hostess.getCheckedPassengers() */
     public synchronized void waitForNextPassenger() {
         int hostessId;                                          //hostess id
 
         hostessId = ((Hostess) Thread.currentThread()).getHostessId();
         ((Hostess) Thread.currentThread()).setHostessState(HostessStates.WAIT_FOR_PASSENGER);
         repos.setHostessState(hostessId, ((Hostess) Thread.currentThread()).getHostessState());
+        hostess.setHostessCount(hostess.getHostessCount()+1);
 
         notifyAll();
-        while ((inQ == 0 && hostess.getHostessCount() < 5 || (!((Hostess) Thread.currentThread()).getReadyForNextPassenger())) && !((Plane.getInF() + DestinationAirport.getPTAL()) == SimulPar.N))    // the hostess waits for a passenger to enter the plane
+        while ((inQ == 0 && hostess.getHostessCount() < 5 || (!((Hostess) Thread.currentThread()).getReadyForNextPassenger())) && !((inP + hostess.getCheckedPassengers()) >= SimulPar.N))    // the hostess waits for a passenger to enter the plane
         {
+            //Plane.getInF()
             try {
                 wait();
             } catch (InterruptedException e) {
@@ -233,6 +251,7 @@ public class DepartureAirport {
         }
 
         ((Hostess) Thread.currentThread()).setReadyForNextPassenger(false);
+        hostess.setPassengerInQueue(!queueEmpty());
     }
 
     /**
@@ -245,6 +264,7 @@ public class DepartureAirport {
         int passengerId;                                            // passenger id
 
         hostess.setReadyForNextPassenger(true);
+        inP +=1;
         passengerId = ((Passenger) Thread.currentThread()).getPassengerId();
         passengers[passengerId].setPassengerState(PassengerStates.IN_FLIGHT);
         repos.setPassengerState(passengerId, passengers[passengerId].getPassengerState());

@@ -21,6 +21,12 @@ public class Pilot extends Thread {
     private int pilotId;
 
     /**
+     * Count number of passengers transported by pilot.
+     */
+
+    private int transportedPassengers;
+
+    /**
      * Pilot state.
      */
 
@@ -83,6 +89,24 @@ public class Pilot extends Thread {
     }
 
     /**
+     * Set number of passengers which pilot has transported.
+     *
+     * @param nTransportedPassengers number of passengers checked
+     */
+
+    public void setTransportedPassengers(int nTransportedPassengers) { transportedPassengers = nTransportedPassengers; }
+
+    /**
+     * Get number of passengers which pilot has transported.
+     *
+     * @return hostess count
+     */
+
+    public int getTransportedPassengers() {
+        return transportedPassengers;
+    }
+
+    /**
      * Set if hostess has informed the pilot that the plane is ready to take off.
      *
      * @param bool ready to take off
@@ -138,7 +162,7 @@ public class Pilot extends Thread {
             plane.announceArrival();
             flyToDeparturePoint();
             plane.parkAtTransferGate();
-            if (DestinationAirport.getPTAL() == SimulPar.N) {
+            if (getTransportedPassengers() == SimulPar.N) {
                 plane.reportFinalReport();
                 endOp = true;
             }

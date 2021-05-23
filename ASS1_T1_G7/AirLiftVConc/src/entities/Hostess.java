@@ -39,6 +39,12 @@ public class Hostess extends Thread {
     private int checkedPassengers;
 
     /**
+     * True if there is any passenger in queue for the hostess to process.
+     */
+
+    private boolean passengerInQueue;
+
+    /**
      * True if the hostess can check next passenger documents.
      */
 
@@ -142,11 +148,31 @@ public class Hostess extends Thread {
     /**
      * Get number of passengers which hostess checked documents.
      *
-     * @return hostess count
+     * @return checked passengers
      */
 
     public int getCheckedPassengers() {
         return checkedPassengers;
+    }
+
+    /**
+     * Set if there is any passenger in queue for the hostess to process
+     *
+     * @param bool passenger in queue
+     */
+
+    public void setPassengerInQueue(boolean bool) {
+        passengerInQueue = bool;
+    }
+
+    /**
+     * Check if there is any passenger in queue for the hostess to process
+     *
+     * @return True if passenger in queue
+     */
+
+    public boolean getPassengerInQueue() {
+        return passengerInQueue;
     }
 
     /**
@@ -220,22 +246,22 @@ public class Hostess extends Thread {
         while (!endOp) {
             depAirport.prepareForPassBoarding();
 
-            while (Plane.getInF() < SimulPar.MIN) {
+            while (getHostessCount() < SimulPar.MIN) {
                 depAirport.checkDocuments();
                 depAirport.waitForNextPassenger();
-                if (Plane.getInF() + DestinationAirport.getPTAL() == SimulPar.N) {
+                if (getHostessCount() + getCheckedPassengers() == SimulPar.N) {
                     endOp = true; break;
                 }
             }
-            while (DepartureAirport.getInQ() != 0 && Plane.getInF() < SimulPar.MAX) {
+            while (getPassengerInQueue() && getHostessCount() < SimulPar.MAX) {
                 depAirport.checkDocuments();
                 depAirport.waitForNextPassenger();
-                if (Plane.getInF() + DestinationAirport.getPTAL() == SimulPar.N) {
+                if (getHostessCount() + getCheckedPassengers() == SimulPar.N) {
                     endOp = true; break;
                 }
             }
-
             plane.informPlaneReadyToTakeOff();
+
             plane.waitForNextFlight();
         }
     }
