@@ -5,6 +5,7 @@ import entities.*;
 import genclass.GenericIO;
 import genclass.TextFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,6 +60,7 @@ public class GeneralRepos {
     private int numeroDeVoo;
     private int ndoVoo;
     private String[] informacaoDosVoos;
+    private List<Integer> queue;
     private int passageiroAtual;
     private int [] passengerPerFlight;
 
@@ -67,6 +69,7 @@ public class GeneralRepos {
         if ((logFileName == null) || Objects.equals (logFileName, ""))
             this.logFileName = "logger";
         else this.logFileName = logFileName;
+        queue = new ArrayList<>();
         passengerPerFlight = new int  [(SimulPar.N / SimulPar.MIN)+1];
         passengerState = new int [SimulPar.N+1];
         passAnteriorState = new int [SimulPar.N+1];
@@ -224,8 +227,8 @@ public class GeneralRepos {
             case HostessStates.CHECK_PASSENGER:
                 lineStatus += "CKPS ";
                 if (hostessAnteriorState == HostessStates.WAIT_FOR_PASSENGER) {
-                    //InQ--;
-
+                    log.writelnString("\nFlight " + numeroDeVoo + ": passenger " + queue.get(0) + " checked.");
+                    queue.remove(0);
                 }
                 hostessAnteriorState = HostessStates.CHECK_PASSENGER;
                 break;
@@ -248,6 +251,7 @@ public class GeneralRepos {
                 case PassengerStates.IN_QUEUE:
                     lineStatus += "INQE ";
                     if (passAnteriorState[i] == PassengerStates.GOING_TO_AIRPORT) {
+                        queue.add(passageiroAtual);
                         InQ++;
                     }
                     passAnteriorState[i] = PassengerStates.IN_QUEUE;
@@ -257,7 +261,6 @@ public class GeneralRepos {
                     if (passAnteriorState[i] == PassengerStates.IN_QUEUE) {
                         InQ--;
                         InF++;
-                        log.writelnString("\nFlight " + numeroDeVoo + ": passenger " + passageiroAtual + " checked.");
                     }
                     passAnteriorState[i] = PassengerStates.IN_FLIGHT;
                     break;
