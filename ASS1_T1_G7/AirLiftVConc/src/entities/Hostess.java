@@ -45,18 +45,6 @@ public class Hostess extends Thread {
     private boolean passengerInQueue;
 
     /**
-     * True if the hostess can check next passenger documents.
-     */
-
-    private boolean readyForNextPassenger;
-
-    /**
-     * True if the passenger has given his documents to the hostess for her to check.
-     */
-
-    private boolean readyToCheckDocuments;
-
-    /**
      * Reference to the departure airport.
      */
 
@@ -86,8 +74,6 @@ public class Hostess extends Thread {
 
     public Hostess(String name, int hostessId, DepartureAirport depAirport, Plane plane, DestinationAirport destAirport) {
         super(name);
-        this.readyToCheckDocuments = false;
-        this.readyForNextPassenger = false;
         this.hostessCount = 0;
         this.checkedPassengers = 0;
         this.hostessId = hostessId;
@@ -173,46 +159,6 @@ public class Hostess extends Thread {
 
     public boolean getPassengerInQueue() {
         return passengerInQueue;
-    }
-
-    /**
-     * Set if hostess is ready to check documents of the next passenger
-     *
-     * @param bool ready for next passenger
-     */
-
-    public void setReadyForNextPassenger(boolean bool) {
-        readyForNextPassenger = bool;
-    }
-
-    /**
-     * Get ready to check documents of the next passenger
-     *
-     * @return True if ready for next passenger
-     */
-
-    public boolean getReadyForNextPassenger() {
-        return readyForNextPassenger;
-    }
-
-    /**
-     * Set if hostess has received the documents from the passenger.
-     *
-     * @param bool ready to check documents
-     */
-
-    public void setReadyToCheckDocuments(boolean bool) {
-        readyToCheckDocuments = bool;
-    }
-
-    /**
-     * Get ready to check documents.
-     *
-     * @return ready to check documents
-     */
-
-    public boolean getReadyToCheckDocuments() {
-        return readyToCheckDocuments;
     }
 
     /**
