@@ -65,6 +65,12 @@ public class DepartureAirport {
     private boolean readyToCheckDocuments;
 
     /**
+     * True if the passenger can board the plane after showing documents to hostess.
+     */
+
+    private boolean canBoardThePlane;
+
+    /**
      * Reference to the general repository.
      */
 
@@ -215,7 +221,7 @@ public class DepartureAirport {
         readyToCheckDocuments = true;
 
         notifyAll();
-        while (hostess.getHostessState() != HostessStates.WAIT_FOR_PASSENGER)   // the passenger waits until he is clear to proceed
+        while (!canBoardThePlane)   // the passenger waits until he is clear to proceed
         {
             try {
                 wait();
@@ -224,6 +230,7 @@ public class DepartureAirport {
                 System.exit(1);
             }
         }
+        canBoardThePlane = false;
     }
 
     /**
@@ -236,6 +243,7 @@ public class DepartureAirport {
         ((Hostess) Thread.currentThread()).setHostessState(HostessStates.WAIT_FOR_PASSENGER);
         repos.setHostessState(((Hostess) Thread.currentThread()).getHostessId(), ((Hostess) Thread.currentThread()).getHostessState());
         ((Hostess) Thread.currentThread()).setHostessCount(((Hostess) Thread.currentThread()).getHostessCount()+1);
+        canBoardThePlane = true;
 
         notifyAll();
         while ((inQ == 0 && ((Hostess) Thread.currentThread()).getHostessCount() < 5 || (!readyForNextPassenger)) && !((inP + ((Hostess) Thread.currentThread()).getCheckedPassengers()) >= SimulPar.N))    // the hostess waits for a passenger to enter the plane
