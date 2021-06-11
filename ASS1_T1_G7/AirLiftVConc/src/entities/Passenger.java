@@ -137,7 +137,8 @@ public class Passenger extends Thread {
 
     @Override
     public void run() {
-        boolean reportFinalInfo = false;
+        boolean lastPassenger = false;
+        int inF;
 
         this.travelToAirport();                // Takes random time
         depAirport.waitInQueue();
@@ -145,8 +146,9 @@ public class Passenger extends Thread {
         depAirport.boardThePlane();
         //plane.setInF(Plane.getInF()+1);
         plane.waitForEndOfFlight();
-        plane.leaveThePlane();             //see you later aligator
-        destAirport.incPTAL();
+        inF = plane.getInF();
+        lastPassenger = destAirport.leaveThePlane(inF);             //see you later aligator
+        if (lastPassenger) { plane.notifyPilot(); }
     }
 
     /**

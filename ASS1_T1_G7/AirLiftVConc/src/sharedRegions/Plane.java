@@ -66,6 +66,18 @@ public class Plane {
     }
 
     /**
+     * Operation to get number passengers in flight
+     * <p>
+     * It is called by the passenger when he is leaving the plane at destination airport so he can check if he is the last to leave.
+     *
+     * @return Number of passengers currently in flight
+     */
+
+    public synchronized int getInF() {
+        return inF;
+    }
+
+    /**
      * Operation to report the final report
      * <p>
      * It is called by the pilot after he parks the plane at the transfer gate and there are no more passengers to transport
@@ -218,17 +230,14 @@ public class Plane {
     }
 
     /**
-     * Operation leave the plane
+     * Operation to notify the pilot
      * <p>
-     * It is called by the passengers when they leave the plane.
+     * It is called by the last passenger when he is leaving the plane to awake the pilot who is waiting.
      */
 
-    public synchronized void leaveThePlane() {
-        inF -= 1;
+    public synchronized void notifyPilot() {
+        inF = 0;
 
-        ((Passenger) Thread.currentThread()).setPassengerState(PassengerStates.AT_DESTINATION);
-        repos.setPassengerState(((Passenger) Thread.currentThread()).getPassengerId(), ((Passenger) Thread.currentThread()).getPassengerState());
-
-        if (inF == 0) { notifyAll(); }
+        notifyAll();
     }
 }

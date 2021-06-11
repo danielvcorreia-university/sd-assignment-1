@@ -3,6 +3,7 @@
     <output-path>$PROJECT_DIR$/out/artifacts/AirLiftVConc_jar</output-path>
     <root id="archive" name="AirLiftVConc.jar">
       <element id="module-output" name="AirLiftVConc" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../genclass/genclass.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/../../../genclass.jar" path-in-jar="/" />
     </root>
   </artifact>

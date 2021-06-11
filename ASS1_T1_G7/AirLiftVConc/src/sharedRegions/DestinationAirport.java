@@ -4,6 +4,7 @@ import commInfra.MemException;
 import commInfra.MemFIFO;
 import entities.Hostess;
 import entities.Passenger;
+import entities.PassengerStates;
 import entities.Pilot;
 import genclass.GenericIO;
 import main.SimulPar;
@@ -19,7 +20,7 @@ import main.SimulPar;
 
 public class DestinationAirport {
     /**
-     * Number of passengers that have arrived at the destination and have left the plane.
+     * For each flight, the number of passengers that left the plane.
      */
 
     private int PTAL;
@@ -42,20 +43,23 @@ public class DestinationAirport {
     }
 
     /**
-     * Get number of passengers in destination.
+     * Operation leave the plane
+     * <p>
+     * It is called by the passengers when they leave the plane.
      *
-     * @return PTAL
+     * @param inF Number of passengers that flew in this flight.
+     * @return Return True if this is the last passenger to leave the plane. Returns false otherwise.
      */
 
-    public int getPTAL() {
-        return PTAL;
-    }
-
-    /**
-     * Set number of passengers in destination by one.
-     */
-
-    public void incPTAL() {
+    public synchronized boolean leaveThePlane(int inF) {
+        boolean lastPassenger = false;
         PTAL += 1;
+
+        ((Passenger) Thread.currentThread()).setPassengerState(PassengerStates.AT_DESTINATION);
+        repos.setPassengerState(((Passenger) Thread.currentThread()).getPassengerId(), ((Passenger) Thread.currentThread()).getPassengerState());
+
+        if (PTAL == inF) { PTAL = 0; lastPassenger = true; }
+
+        return lastPassenger;
     }
 }
