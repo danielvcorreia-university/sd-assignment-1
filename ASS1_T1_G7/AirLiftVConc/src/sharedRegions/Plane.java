@@ -88,9 +88,9 @@ public class Plane {
     }
 
     /**
-     * Operation prepare for pass boarding
+     * Operation park at transfer gate.
      * <p>
-     * It is called by the hostess while waiting for passengers to arrive at the airport.
+     * It is called by the pilot when he parks the plane at the transfer gate.
      */
 
     public synchronized void parkAtTransferGate() {
@@ -104,7 +104,6 @@ public class Plane {
      * <p>
      * It is called by the pilot to inform the hostess that the plane is ready for boarding.
      */
-
 
     public synchronized void informPlaneReadyForBoarding() {
         nextFlight = true;
